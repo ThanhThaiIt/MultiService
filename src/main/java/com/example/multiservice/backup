@@ -1,0 +1,63 @@
+
+//        UserEntity userEntity = new UserEntity();
+//        userEntity.setFirst_name(userRequest.first_name());
+//        userEntity.setMiddle_name(userRequest.middle_name());
+//        userEntity.setLast_name(userRequest.last_name());
+//        userEntity.setEmail(userRequest.email());
+//        userEntity.setMobile(userRequest.mobile());
+//        userEntity.setPassword_hash(userRequest.password_hash());
+//        // part String to DateTime
+//        userEntity.setRegistered_at(dateTimeUtils.parseStringToLocalDateTime(userRequest.registered_at()));
+//        userEntity.setLast_login(dateTimeUtils.parseStringToLocalDateTime(userRequest.last_login()));
+//        // set is active, 1 as Activate,
+//        userEntity.setActive(1);
+//        userEntity.setIntro(userRequest.intro());
+//        userEntity.setBio(userRequest.bio());
+//        userEntity.setAvatar_url(userRequest.avatar_url());
+//        userEntity.setSocial_links(userRequest.social_links());
+//        RoleEntity roleEntity = new RoleEntity();
+//        roleEntity.setId(userRequest.role_id());
+//        userEntity.setRoleEntity(roleEntity);
+
+
+
+//        UserEntity userEntity = new UserEntity();
+//        userEntity.setId(userRequest.id());
+//        userEntity.setFirst_name(userRequest.first_name());
+//        userEntity.setMiddle_name(userRequest.middle_name());
+//        userEntity.setLast_name(userRequest.last_name());
+//        userEntity.setEmail(userRequest.email());
+//        userEntity.setMobile(userRequest.mobile());
+//        userEntity.setPassword_hash(userRequest.password_hash());
+//        // part String to DateTime
+//        userEntity.setRegistered_at(dateTimeUtils.parseStringToLocalDateTime(userRequest.registered_at()));
+//        userEntity.setLast_login(dateTimeUtils.parseStringToLocalDateTime(userRequest.last_login()));
+//        // set is active, 1 as Activate,
+//        if (userRequest.active() == 1 || userRequest.active() == 0  ) {
+//            userEntity.setActive(userRequest.active());
+//        }
+//
+//        userEntity.setIntro(userRequest.intro());
+//        userEntity.setBio(userRequest.bio());
+//        userEntity.setAvatar_url(userRequest.avatar_url());
+//        userEntity.setSocial_links(userRequest.social_links());
+//        RoleEntity roleEntity = new RoleEntity();
+//        roleEntity.setId(userRequest.role_id());
+//        userEntity.setRoleEntity(roleEntity);
+
+
+
+//            UserResponse userResponse = new UserResponse();
+//            userResponse.setId(userEntity.getId());
+//            userResponse.setFirst_name(userEntity.getFirst_name());
+//            userResponse.setMiddle_name(userEntity.getMiddle_name());
+//            userResponse.setLast_name(userEntity.getLast_name());
+//            userResponse.setEmail(userEntity.getEmail());
+//            userResponse.setMobile(userEntity.getMobile());
+//            userResponse.setRegistered_at(userEntity.getRegistered_at());
+//            userResponse.setLast_login(userEntity.getLast_login());
+//            userResponse.setIntro(userEntity.getIntro());
+//            userResponse.setBio(userEntity.getBio());
+//            userResponse.setAvatar_url(userEntity.getAvatar_url());
+//            userResponse.setSocial_links(userEntity.getSocial_links());
+//            userResponse.setRoleName(UserRole.getById(userEntity.getRoleEntity().getId()).getName());
