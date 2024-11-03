@@ -15,7 +15,10 @@ import com.example.multiservice.utils.DateTimeUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class UserServiceImpl implements UserService {
 
      DateTimeUtils dateTimeUtils;
@@ -34,6 +38,8 @@ public class UserServiceImpl implements UserService {
      UserRepository userRepository;
 
      UserMapper userMapper;
+
+     PasswordEncoder passwordEncoder;
 
     @Override
     public boolean createUser(UserRequest userRequest) {
@@ -43,8 +49,7 @@ public class UserServiceImpl implements UserService {
             throw new AppException(ErrorStatusCode.USER_ALREADY_EXISTS);
         }
 
-        //10 is default
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+
 
 
         UserEntity userEntity = userMapper.toUser(userRequest);
@@ -101,6 +106,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponse> getAllUsers() {
+
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("Username: {}", authentication.getName());
+        authentication.getAuthorities().forEach(grantedAuthority -> log.info("Role: {}", grantedAuthority.getAuthority()));
+
         List<UserEntity> userEntities = userRepository.findByActive(1);
 
         return userEntities.stream().map(userEntity -> new UserResponse(

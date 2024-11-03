@@ -2,6 +2,7 @@ package com.example.multiservice.utils;
 
 import com.example.multiservice.dto.request.IntrospectRequest;
 import com.example.multiservice.dto.response.IntrospectResponse;
+import com.example.multiservice.entity.UserEntity;
 import com.example.multiservice.exception.AppException;
 import com.example.multiservice.exception.enums.ErrorStatusCode;
 import com.nimbusds.jose.*;
@@ -27,20 +28,20 @@ import java.util.Date;
 
  public class JwtUtils {
     private static final Logger log = LoggerFactory.getLogger(JwtUtils.class);
-    long EXPIRATION_TIME =15 * 60 * 1000; //1 p
+    long EXPIRATION_TIME =1 * 60 * 1000; //1 p
 
     @NonFinal// marking to do not let Inject vào Contructor
     @Value("${jwt.secret.key}")
     protected   String secrect;
 
-    public String generateToken(String username) {
+    public String generateToken(UserEntity userEntity) {
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);// Type Of Algorithm
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(username)
+                .subject(userEntity.getEmail())
                 .issuer("multiservice.com")// who issue
                 .issueTime(new Date())
                 .expirationTime(new Date(Instant.now().toEpochMilli() + EXPIRATION_TIME))
-                .claim("Hello User Đã Đúng","Custom")
+                .claim("scope",userEntity.getRoleEntity().getTitle())
                 .build();
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());

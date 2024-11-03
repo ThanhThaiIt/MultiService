@@ -40,7 +40,7 @@ public class AuthenServiceImpl implements AuthenService {
         if(!checkAuthen){
             throw new AppException(ErrorStatusCode.UNAUTHENTICATED);
         }
-        var token = jwtUtils.generateToken(userEntity.getEmail());
+        var token = jwtUtils.generateToken(userEntity);
 
         return AuthenticationResponse.builder()
                 .token(token)

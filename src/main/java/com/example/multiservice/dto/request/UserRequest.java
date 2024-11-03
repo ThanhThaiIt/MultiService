@@ -4,6 +4,9 @@ package com.example.multiservice.dto.request;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 public record UserRequest(
 
             @Size(min = 6, max = 9,message = "USER_FIRST_NAME_INVALID")
@@ -31,6 +34,13 @@ public record UserRequest(
           int role_id
 
 ) {
-
+    public UserRequest(String first_name, String middle_name, String last_name,
+                       String mobile, String email, String password_hash,
+                       String last_login, String intro, String bio,
+                       String avatar_url, String social_links, int role_id) {
+        this(first_name, middle_name, last_name, mobile, email, password_hash,
+                LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME),
+                last_login, intro, bio, avatar_url, social_links, role_id);
+    }
 
 }
