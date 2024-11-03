@@ -22,7 +22,7 @@ public class AuthenticationController {
 
     AuthenService authenService;
 
-    @PostMapping("/login")
+    @PostMapping("/token")
     ApiResponse<AuthenticationResponse> login(@RequestBody AuthenticationRequest authenticationRequest) {
         var result = authenService.Authenticate(authenticationRequest);
         return ApiResponse.<AuthenticationResponse>builder()

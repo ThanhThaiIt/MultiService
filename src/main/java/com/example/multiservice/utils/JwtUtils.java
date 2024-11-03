@@ -63,12 +63,14 @@ import java.util.Date;
         SignedJWT signedJWT = SignedJWT.parse(token);
 
 
-        Date isExpired = signedJWT.getJWTClaimsSet().getExpirationTime();// get expire time from token
+        Date isExpired = signedJWT.getJWTClaimsSet().getExpirationTime();// get expire time from token return true false
 
         if (!isExpired.after(new Date())) {
             throw new AppException(ErrorStatusCode.TOKEN_EXPIRED);
         }
-        var verified = signedJWT.verify(verifier);// return true or false: true if is correct token   and vice versa
+
+        // available function
+        var verified = signedJWT.verify(verifier);// return true or false: true if is correct token  and vice versa
 
         return verified && isExpired.after(new Date());
     }
