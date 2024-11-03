@@ -11,6 +11,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -27,6 +28,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 @Configuration
 @EnableWebSecurity// optional
+@EnableMethodSecurity
 public class SecurityConfig {
 
 
@@ -52,7 +54,7 @@ public class SecurityConfig {
         httpSecurity.authorizeRequests(authorizeRequests ->
                 authorizeRequests
                         .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/users").hasRole(UserRole.ADMIN.getName())
+                        //.requestMatchers(HttpMethod.GET, "/users").hasRole(UserRole.ADMIN.getName())
                         .anyRequest().authenticated()
 
                 );

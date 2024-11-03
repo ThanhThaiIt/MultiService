@@ -14,7 +14,9 @@ import com.nimbusds.jose.JOSEException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class AuthenServiceImpl implements AuthenService {
 
     UserRepository userRepository;
@@ -33,6 +36,8 @@ public class AuthenServiceImpl implements AuthenService {
 
     @Override
     public AuthenticationResponse Authenticate(AuthenticationRequest authenticationRequest) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        //log.info("Username: {}", authentication.getName());
         var userEntity = userRepository.findByEmail(authenticationRequest.email()).orElseThrow(() -> new  AppException(ErrorStatusCode.USER_NOT_FOUND));
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
 

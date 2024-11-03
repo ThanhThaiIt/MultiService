@@ -17,4 +17,5 @@ public interface UserService {
       UserResponse getUserById(int id);
       List<UserResponse> getAllUsers();
       boolean deleteUserById(int id);
+      UserResponse getUserByEmail();
 }
