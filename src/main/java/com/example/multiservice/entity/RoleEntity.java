@@ -12,6 +12,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+
 @Entity(name = "roles")
 public class RoleEntity {
 
@@ -40,6 +41,9 @@ public class RoleEntity {
     @Column(name = "content")
     private String content;
 
+    public RoleEntity(int id) {
+        this.id = id;
+    }
 
     @OneToMany(mappedBy = "roleEntity")
     private List<UserEntity> userEntities;
