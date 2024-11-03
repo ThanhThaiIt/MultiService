@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -90,7 +92,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @PostAuthorize("(returnObject.email==authentication.name)||(hasRole('ADMIN'))")
     public UserResponse getUserById(int id) {
+        log.info("in method getUserById");
+
         UserEntity userEntity = userRepository.findById(id).orElse(null);
 
         if (userEntity == null) {
@@ -105,11 +110,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getAllUsers() {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         log.info("Username: {}", authentication.getName());
-        authentication.getAuthorities().forEach(grantedAuthority -> log.info("Role: {}", grantedAuthority.getAuthority()));
+
+        log.info("in method getAllUsers");
 
         List<UserEntity> userEntities = userRepository.findByActive(1);
 
@@ -147,5 +154,15 @@ public class UserServiceImpl implements UserService {
         }
 
         return result;
+    }
+
+    @Override
+    public UserResponse getUserByEmail() {
+        var context = SecurityContextHolder.getContext();
+        String name = context.getAuthentication().getName();
+        UserEntity userEntity = userRepository.findByEmail(name).orElseThrow(()-> new AppException(ErrorStatusCode.USER_NOT_FOUND));
+        UserResponse userResponse = userMapper.toUserResponse(userEntity);
+        userResponse.setRoleName(UserRole.getById(userEntity.getRoleEntity().getId()).getName());
+        return userResponse;
     }
 }
