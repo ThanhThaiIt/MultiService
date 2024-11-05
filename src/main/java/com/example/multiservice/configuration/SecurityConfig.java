@@ -62,9 +62,12 @@ public class SecurityConfig {
         // create provider mannager: support for jwt token
         httpSecurity.oauth2ResourceServer(oauth2 ->
                 oauth2.jwt(jwtConfigurer ->
-                        jwtConfigurer.decoder(jwtdecoder())
+                        jwtConfigurer
+                                .decoder(jwtdecoder())
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter())
-                ));
+
+                ).authenticationEntryPoint(new JwtAuthenticationEntryPoint())
+        );
 
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
 

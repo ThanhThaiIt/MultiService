@@ -2,7 +2,7 @@ package com.example.multiservice.exception.enums;
 
 public enum UserRole {
     ADMIN(1, "ADMIN"),
-    USER(2, "ADMIN");
+    USER(2, "USER");
 
     private final int id;
     private final String name;
