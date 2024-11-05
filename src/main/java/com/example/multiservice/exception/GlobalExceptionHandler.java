@@ -4,6 +4,7 @@ package com.example.multiservice.exception;
 import com.example.multiservice.dto.response.ApiResponse;
 import com.example.multiservice.exception.enums.ErrorStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,7 +16,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = Exception.class)
     ResponseEntity<ApiResponse> handlingRunTimeException(RuntimeException runtimeException) {
         ApiResponse apiResponse = new ApiResponse();
-        apiResponse.setStatusCode(ErrorStatusCode.UNCATEGORIZED_EXCEPTION.getStatusCode());
+        apiResponse.setCode(ErrorStatusCode.UNCATEGORIZED_EXCEPTION.getCode());
         apiResponse.setMessage(ErrorStatusCode.UNCATEGORIZED_EXCEPTION.getMessage());
             return ResponseEntity.badRequest().body(apiResponse);
     }
@@ -25,11 +26,23 @@ public class GlobalExceptionHandler {
     ResponseEntity<ApiResponse> handlingAppException(AppException appException) {
         ErrorStatusCode errorStatusCode = appException.getErrorStatusCode();// when catch exception, we have pass parameter with Type ErrorStatusCode, so that we can get statusCode And Message
         ApiResponse apiResponse = new ApiResponse();
-        apiResponse.setStatusCode(errorStatusCode.getStatusCode());
+        apiResponse.setCode(errorStatusCode.getCode());
         apiResponse.setMessage(errorStatusCode.getMessage());
-        return ResponseEntity.badRequest().body(apiResponse);
+        return ResponseEntity.status(errorStatusCode.getHttpStatusCode()).body(apiResponse);
     }
 
+
+    @ExceptionHandler(value = AccessDeniedException.class)
+    ResponseEntity<ApiResponse> handlingAccessDeniedException(AccessDeniedException accessDeniedException) {
+
+        ErrorStatusCode errorStatusCode = ErrorStatusCode.UNAUTHORIZED_CLIENT;
+        return ResponseEntity.status(errorStatusCode.getHttpStatusCode()).body(ApiResponse.builder()
+                        .code(errorStatusCode.getCode())
+                        .message(errorStatusCode.getMessage())
+                .build());
+    }
+
+    // Throw exception with validation request
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     ResponseEntity<ApiResponse> handlingMethodArgumentNotValidException(MethodArgumentNotValidException methodArgumentNotValidException) {
 
@@ -40,13 +53,9 @@ public class GlobalExceptionHandler {
         try {
             errorStatusCode = ErrorStatusCode.valueOf(errorMessage);// Parse Enum Through Name of Enum, then get correct message
         }catch (IllegalArgumentException e) {}
-
-
-
-
         ApiResponse apiResponse = new ApiResponse();
 
-        apiResponse.setStatusCode(errorStatusCode.getStatusCode());
+        apiResponse.setCode(errorStatusCode.getCode());
         apiResponse.setMessage(errorStatusCode.getMessage());
         return ResponseEntity.badRequest().body(apiResponse);
     }

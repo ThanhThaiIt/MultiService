@@ -139,6 +139,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public boolean deleteUserById(int id) {
         boolean result = false;
         Optional<UserEntity> userOptional = userRepository.findById(id);
