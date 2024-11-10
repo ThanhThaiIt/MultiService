@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public record UserRequest(
 
@@ -31,16 +32,16 @@ public record UserRequest(
           String bio,
           String avatar_url,
           String social_links,
-          int role_id
+            List<Integer> roles
 
 ) {
     public UserRequest(String first_name, String middle_name, String last_name,
                        String mobile, String email, String password_hash,
                        String last_login, String intro, String bio,
-                       String avatar_url, String social_links, int role_id) {
+                       String avatar_url, String social_links, List<Integer> roles) {
         this(first_name, middle_name, last_name, mobile, email, password_hash,
                 LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME),
-                last_login, intro, bio, avatar_url, social_links, role_id);
+                last_login, intro, bio, avatar_url, social_links, roles);
     }
 
 }

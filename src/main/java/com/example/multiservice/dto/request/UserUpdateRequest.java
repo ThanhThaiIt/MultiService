@@ -1,5 +1,7 @@
 package com.example.multiservice.dto.request;
 
+import java.util.List;
+
 public record UserUpdateRequest(
         int id,
         String first_name,
@@ -15,6 +17,6 @@ public record UserUpdateRequest(
         String avatar_url,
         String social_links,
         int active,
-        int role_id
+        List<Integer> roles
 ) {
 }

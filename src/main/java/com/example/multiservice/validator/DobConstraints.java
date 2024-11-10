@@ -1,4 +1,4 @@
 package com.example.multiservice.validator;
 
-public interface DobConstraint {
+public @interface DobConstraints {
 }

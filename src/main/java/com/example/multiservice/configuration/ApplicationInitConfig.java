@@ -2,9 +2,10 @@ package com.example.multiservice.configuration;
 
 import com.example.multiservice.entity.RoleEntity;
 import com.example.multiservice.entity.UserEntity;
-import com.example.multiservice.exception.enums.UserRole;
+ import com.example.multiservice.exception.enums.UserRole;
+import com.example.multiservice.repository.RolePermissionRepository;
 import com.example.multiservice.repository.UserRepository;
-import lombok.AccessLevel;
+ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -27,18 +30,21 @@ public class ApplicationInitConfig {
      PasswordEncoder passwordEncoder ;
 
      @Bean
-    ApplicationRunner applicationRunner(UserRepository userRepository){
+    ApplicationRunner applicationRunner(UserRepository userRepository, RolePermissionRepository rolePermissionRepository){
         return args -> {
             var role = UserRole.ADMIN.getId();
             if (userRepository.findByEmail("admin@admin.com").isEmpty()){
                 UserEntity userEntity = UserEntity.builder()
                         .email("admin@admin.com")
                         .password_hash(passwordEncoder.encode("admin"))
-                        .roleEntity(new RoleEntity(role))// set id Role
+                        // set id Role
                         .registered_at(LocalDateTime.now())
                         .active(1)
                         .build();
                 userRepository.save(userEntity);
+
+                //userRoleRepository.insertUserRole(userEntity.getId(),1);
+
 
                 log.warn("admin user has been created with default password: admin, please change it");
             }

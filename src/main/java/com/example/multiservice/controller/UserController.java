@@ -22,8 +22,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+     UserService userService;
 
     @PostMapping
     public ApiResponse<String> createUser(@RequestBody @Valid UserRequest userRequest) {
