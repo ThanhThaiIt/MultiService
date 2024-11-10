@@ -2,9 +2,8 @@ package com.example.multiservice.entity;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,42 +11,45 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
 @Entity(name = "roles")
 public class RoleEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+     int id;
 
     @Column(name = "title")
-    private String title;
+     String title;
 
     @Column(name = "slug")
-    private String slug;
+     String slug;
 
     @Column(name = "description")
-    private String description;
+     String description;
 
     @Column(name = "active")
-    private int active;
+     int active;
 
     @Column(name = "created_at")
-    private LocalDateTime created_at;
+     LocalDateTime created_at;
 
     @Column(name = "updated_at")
-    private LocalDateTime updated_at;
+     LocalDateTime updated_at;
 
     @Column(name = "content")
-    private String content;
+     String content;
 
     public RoleEntity(int id) {
         this.id = id;
     }
 
-    @OneToMany(mappedBy = "roleEntity")
-    private List<UserEntity> userEntities;
+
+
+//    @OneToMany(mappedBy = "roleEntity")
+//     List<UserRoleEntity> userRoleEntities;
 
     @OneToMany(mappedBy = "roleEntity")
-    private List<RolePermissionEntity> rolePermissionEntities;
+     List<RolePermissionEntity> rolePermissionEntities;
 }

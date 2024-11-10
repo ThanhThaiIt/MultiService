@@ -44,4 +44,18 @@ public class PermissionEntity {
     @OneToMany(mappedBy = "permissionEntity")
     private List<RolePermissionEntity> rolePermissionEntities;
 
+    @Override
+    public String toString() {
+        return "PermissionEntity{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", slug='" + slug + '\'' +
+                ", description='" + description + '\'' +
+                ", active=" + active +
+                ", created_at=" + created_at +
+                ", updated_at=" + updated_at +
+                ", content='" + content + '\'' +
+                ", rolePermissionEntities=" + rolePermissionEntities +
+                '}';
+    }
 }

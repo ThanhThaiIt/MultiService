@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -56,9 +57,13 @@ public class UserEntity {
     @Column(name = "active")
       int active;
 
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-      RoleEntity roleEntity;
+//    @OneToMany(mappedBy = "userEntity",fetch = FetchType.LAZY)
+//    List<UserRoleEntity> userRoleEntities;
+
+    @ManyToMany
+    List<RoleEntity> roles;
+
+
 
 
 }

@@ -2,15 +2,21 @@ package com.example.multiservice.service.impl;
 
 import com.example.multiservice.dto.request.UserRequest;
 import com.example.multiservice.dto.request.UserUpdateRequest;
+import com.example.multiservice.dto.response.PermissionResponse;
+import com.example.multiservice.dto.response.RoleResponse;
 import com.example.multiservice.dto.response.UserResponse;
+import com.example.multiservice.entity.PermissionEntity;
 import com.example.multiservice.entity.RoleEntity;
 import com.example.multiservice.entity.UserEntity;
-import com.example.multiservice.exception.enums.UserRole;
 import com.example.multiservice.exception.AppException;
 import com.example.multiservice.exception.enums.ErrorStatusCode;
+import com.example.multiservice.mapper.PermissionMapper;
+import com.example.multiservice.mapper.RoleMapper;
 import com.example.multiservice.mapper.UserMapper;
+import com.example.multiservice.repository.PermissionRepository;
+import com.example.multiservice.repository.RoleRepository;
 import com.example.multiservice.repository.UserRepository;
-import com.example.multiservice.service.UserService;
+ import com.example.multiservice.service.UserService;
 import com.example.multiservice.utils.DateTimeUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +31,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,36 +42,45 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserServiceImpl implements UserService {
 
-     DateTimeUtils dateTimeUtils;
+    DateTimeUtils dateTimeUtils;
 
-     UserRepository userRepository;
+    UserRepository userRepository;
 
-     UserMapper userMapper;
+    UserMapper userMapper;
 
-     PasswordEncoder passwordEncoder;
+    PasswordEncoder passwordEncoder;
+
+    RoleRepository roleRepository;
+
+PermissionRepository permissionRepository;
+PermissionMapper permissionMapper;
+RoleMapper roleMapper;
+
+//    UserRoleRepository roleRepository;
+//    private final UserRoleRepository userRoleRepository;
 
     @Override
     public boolean createUser(UserRequest userRequest) {
         boolean result = false;
 
-        if (userRepository.existsByEmail(userRequest.email()) || userRepository.existsByMobile(userRequest.mobile())){
+        if (userRepository.existsByEmail(userRequest.email()) || userRepository.existsByMobile(userRequest.mobile())) {
             throw new AppException(ErrorStatusCode.USER_ALREADY_EXISTS);
         }
-
-
 
 
         UserEntity userEntity = userMapper.toUser(userRequest);
         userEntity.setPassword_hash(passwordEncoder.encode(userRequest.password_hash()));
         userEntity.setActive(1);
+        var roles = roleRepository.findAllById(userRequest.roles());
+        userEntity.setRoles(roles);
 
 
         try {
             userRepository.save(userEntity);
             result = true;
-        }catch (RuntimeException e){
-            throw new RuntimeException("Failed to save user");
-         }
+        } catch (RuntimeException e) {
+            throw new AppException(ErrorStatusCode.FAILED_CREATE);
+        }
 
 
         return result;
@@ -79,14 +95,19 @@ public class UserServiceImpl implements UserService {
         }
 
         UserEntity userEntity = userMapper.toUserUpdate(userRequest);
-        if (userRequest.active() == 1 || userRequest.active() == 0  ) {
+        userEntity.setPassword_hash(passwordEncoder.encode(userRequest.password_hash()));
+        var roles = roleRepository.findAllById(userRequest.roles());
+        userEntity.setRoles(roles);
+
+
+        if (userRequest.active() == 1 || userRequest.active() == 0) {
             userEntity.setActive(userRequest.active());
         }
         try {
             userRepository.save(userEntity);
             result = true;
-        }catch (RuntimeException e){
-            throw new RuntimeException("Failed to update user");
+        } catch (RuntimeException e) {
+            throw new AppException(ErrorStatusCode.FAILED_UPDATE);
         }
         return result;
     }
@@ -102,40 +123,57 @@ public class UserServiceImpl implements UserService {
             throw new AppException(ErrorStatusCode.USER_NOT_FOUND);
         }
         UserResponse userResponse = userMapper.toUserResponse(userEntity);
-        userResponse.setRoleName(UserRole.getById(userEntity.getRoleEntity().getId()).getName());
-
-
         return userResponse;
 
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('create_post')")
     public List<UserResponse> getAllUsers() {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         log.info("Username: {}", authentication.getName());
+        authentication.getAuthorities().forEach(grantedAuthority -> log.info("GrantedAuthority: {}", grantedAuthority));
 
         log.info("in method getAllUsers");
 
         List<UserEntity> userEntities = userRepository.findByActive(1);
 
-        return userEntities.stream().map(userEntity -> new UserResponse(
-                userEntity.getId(),
-                userEntity.getFirst_name(),
-                userEntity.getMiddle_name(),
-                userEntity.getLast_name(),
-                userEntity.getMobile(),
-                userEntity.getEmail(),
-                userEntity.getRegistered_at(),
-                userEntity.getLast_login(),
-                userEntity.getIntro(),
-                userEntity.getBio(),
-                userEntity.getAvatar_url(),
-                userEntity.getSocial_links(),
-                UserRole.getById(userEntity.getRoleEntity().getId()).getName()// use enum store role, then user id from db to get name role form enum
+        List<UserResponse> userResponses = new ArrayList<>();
+        for (UserEntity userEntity : userEntities) {
 
-        )).collect(Collectors.toList());
+            var roles = userEntity.getRoles();
+
+            List<RoleResponse> roleResponses = new ArrayList<>();
+
+            for (RoleEntity roleEntity : roles) {
+                List<PermissionEntity> permissionEntities= permissionRepository.findPermissionsByRoleId(roleEntity.getId());
+                List<PermissionResponse> permissionResponses = new ArrayList<>();
+
+                for (PermissionEntity permissionEntity : permissionEntities) {
+                    permissionResponses.add(permissionMapper.toPermissionResponse(permissionEntity));
+                }
+                RoleResponse roleResponse = roleMapper.roleToRoleResponse(roleEntity);
+                roleResponse.setPermissions(permissionResponses);
+                roleResponses.add(roleResponse);
+
+
+            }
+
+
+
+
+            UserResponse userResponse = userMapper.toUserResponse(userEntity);
+            userResponse.setRoles(roleResponses);
+            userResponses.add(userResponse);
+
+        }
+
+
+        return userResponses;
+
+
     }
 
     @Override
@@ -145,13 +183,13 @@ public class UserServiceImpl implements UserService {
         Optional<UserEntity> userOptional = userRepository.findById(id);
         if (!userOptional.isPresent()) {
             throw new AppException(ErrorStatusCode.USER_NOT_FOUND);
-        }else if (userOptional.isPresent()&&userOptional.get().getActive()==1) {
+        } else if (userOptional.isPresent() && userOptional.get().getActive() == 1) {
             UserEntity userEntity = userOptional.get();
             userEntity.setActive(0);
             userRepository.save(userEntity);
             result = true;
-        }else {
-            throw new RuntimeException("Failed to delete user");
+        } else {
+            throw new AppException(ErrorStatusCode.FAILED_DELETE);
         }
 
         return result;
@@ -161,9 +199,8 @@ public class UserServiceImpl implements UserService {
     public UserResponse getUserByEmail() {
         var context = SecurityContextHolder.getContext();
         String name = context.getAuthentication().getName();
-        UserEntity userEntity = userRepository.findByEmail(name).orElseThrow(()-> new AppException(ErrorStatusCode.USER_NOT_FOUND));
+        UserEntity userEntity = userRepository.findByEmail(name).orElseThrow(() -> new AppException(ErrorStatusCode.USER_NOT_FOUND));
         UserResponse userResponse = userMapper.toUserResponse(userEntity);
-        userResponse.setRoleName(UserRole.getById(userEntity.getRoleEntity().getId()).getName());
         return userResponse;
     }
 }

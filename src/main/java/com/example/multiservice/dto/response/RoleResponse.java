@@ -1,5 +1,6 @@
 package com.example.multiservice.dto.response;
 
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -13,19 +14,15 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserResponse {
-  int id;
-  String first_name;
-  String middle_name;
-  String last_name;
-  String mobile;
-  String email;
-  LocalDateTime registered_at;
-  LocalDateTime last_login;
-  String intro;
-  String bio;
-  String avatar_url;
-  String social_links;
-  List<String> roleName;
-  List<RoleResponse> roles;
+public class RoleResponse {
+    int id;
+    String title;
+    String slug;
+    String description;
+    int active;
+    LocalDateTime created_at;
+    LocalDateTime updated_at;
+    String content;
+    List<PermissionResponse> permissions;
+    List<UserResponse> users;
 }
