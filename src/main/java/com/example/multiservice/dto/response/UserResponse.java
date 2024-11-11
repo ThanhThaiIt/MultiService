@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class UserResponse {
   String last_name;
   String mobile;
   String email;
+  LocalDate dob;
   LocalDateTime registered_at;
   LocalDateTime last_login;
   String intro;

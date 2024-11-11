@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,6 +27,9 @@ public class UserEntity {
 
     @Column(name = "last_name")
       String last_name;
+
+    @Column(name = "dob")
+    LocalDate dob;
 
     @Column(name = "mobile")
       String mobile;
