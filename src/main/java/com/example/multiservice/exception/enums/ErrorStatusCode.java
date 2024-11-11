@@ -14,6 +14,7 @@ public enum ErrorStatusCode {
     FAILED_CREATE(8888,"FAIL CREATE Exception",HttpStatus.BAD_REQUEST),
     FAILED_DELETE(8888,"FAIL DELETE Exception",HttpStatus.BAD_REQUEST),
     NOT_FOUND(8888,"NOT FOUND Exception",HttpStatus.BAD_REQUEST),
+    DOB_EXCEPTION(8888,"Invalid DOB EXCEPTION",HttpStatus.BAD_REQUEST),
 
     // User
     USER_NOT_FOUND(1000, "User Not Found",HttpStatus.NOT_FOUND),

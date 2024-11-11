@@ -90,6 +90,10 @@ import java.util.StringJoiner;
         return verified && isExpired.after(new Date());
     }
 
+
+    // The business here is that we will have a parameter as a UserEntity and in this entity there will be 1
+    // ListRoles and each Role will have many Permissions, we will go through each element  to concatenate
+    // the string and distinguish between Role and Permission as "ROLE_"
     private String buildScopes(UserEntity userEntity) {
         StringJoiner scopes = new StringJoiner(" ");
         if (!CollectionUtils.isEmpty(userEntity.getRoles())) {

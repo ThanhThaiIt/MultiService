@@ -1,5 +1,9 @@
 package com.example.multiservice.dto.request;
 
+import com.example.multiservice.validator.constraints.DobConstraints;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record UserUpdateRequest(
@@ -9,6 +13,8 @@ public record UserUpdateRequest(
         String last_name,
         String mobile,
         String email,
+        @DobConstraints(min = 18,message = "DOB_EXCEPTION")
+        LocalDate dob,
         String password_hash,
         String registered_at,
         String last_login,

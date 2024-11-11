@@ -43,6 +43,8 @@ public class GlobalExceptionHandler {
     }
 
     // Throw exception with validation request
+
+    //example: default message [DOB_EXCEPTION] we will use message to get From enum ErrorStatusCode
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     ResponseEntity<ApiResponse> handlingMethodArgumentNotValidException(MethodArgumentNotValidException methodArgumentNotValidException) {
 
@@ -57,6 +59,7 @@ public class GlobalExceptionHandler {
 
         apiResponse.setCode(errorStatusCode.getCode());
         apiResponse.setMessage(errorStatusCode.getMessage());
+        //apiResponse.setMessage(methodArgumentNotValidException.getMessage());
         return ResponseEntity.badRequest().body(apiResponse);
     }
 
