@@ -13,7 +13,7 @@ public record UserUpdateRequest(
         String last_name,
         String mobile,
         String email,
-        @DobConstraints(min = 18,message = "DOB_EXCEPTION")
+        @DobConstraints(min = 18,max = 80,message = "DOB_EXCEPTION")
         LocalDate dob,
         String password_hash,
         String registered_at,
