@@ -3,14 +3,26 @@ package com.example.multiservice.exception;
 
 import com.example.multiservice.dto.response.ApiResponse;
 import com.example.multiservice.exception.enums.ErrorStatusCode;
+import jakarta.validation.ConstraintViolation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
+    // attribute in group Map<String,Object>
+    private static final String MIN_ATTRIBUTE = "min";
+    private static final String MAX_ATTRIBUTE = "max";
+
 
     // Collect all Exception for easy management, For Exception except what we customize
     @ExceptionHandler(value = Exception.class)
@@ -52,15 +64,43 @@ public class GlobalExceptionHandler {
 
         ErrorStatusCode errorStatusCode = ErrorStatusCode.INVALID_KEY_EXCEPTION;// Default value with Error Incorrect Message Key In @Valid
 
+        Map<String,Object> attributes =null;
         try {
             errorStatusCode = ErrorStatusCode.valueOf(errorMessage);// Parse Enum Through Name of Enum, then get correct message
+
+            // advance: replace value in message exception
+            //https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/validation/BindException.html
+            var constraintViolations = methodArgumentNotValidException.getBindingResult().getAllErrors().getFirst().unwrap(ConstraintViolation.class);
+
+             attributes = constraintViolations.getConstraintDescriptor().getAttributes();
+            log.info(attributes.toString());
+
+//             for (var x : methodArgumentNotValidException.getBindingResult().getAllErrors()){
+//                 var xNew = x.unwrap(ConstraintViolation.class);
+//                 log.info(xNew.getConstraintDescriptor().getAttributes().toString());
+//             }
+
+
+
         }catch (IllegalArgumentException e) {}
         ApiResponse apiResponse = new ApiResponse();
 
         apiResponse.setCode(errorStatusCode.getCode());
-        apiResponse.setMessage(errorStatusCode.getMessage());
+        apiResponse.setMessage(Objects.nonNull(attributes) ? mapAttribute(errorStatusCode.getMessage(),attributes):errorStatusCode.getMessage());
         //apiResponse.setMessage(methodArgumentNotValidException.getMessage());
         return ResponseEntity.badRequest().body(apiResponse);
+    }
+
+
+    private String mapAttribute(String message, Map<String, Object> attributes) {
+
+        String minValue = String.valueOf(attributes.get(MIN_ATTRIBUTE));
+        String maxValue = String.valueOf(attributes.get(MAX_ATTRIBUTE));
+
+        message = message.replace("{" + MIN_ATTRIBUTE + "}", minValue);
+        message = message.replace("{" + MAX_ATTRIBUTE + "}", maxValue);
+
+        return message;
     }
 
 }

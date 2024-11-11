@@ -16,6 +16,7 @@ public @interface DobConstraints {
     String message() default "Invalid date of birth";
 
     int min();
+    int max();
 
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};

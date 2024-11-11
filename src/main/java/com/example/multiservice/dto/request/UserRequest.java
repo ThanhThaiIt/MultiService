@@ -12,13 +12,13 @@ import java.util.List;
 
 public record UserRequest(
 
-        @Size(min = 6, max = 9, message = "USER_FIRST_NAME_INVALID")
+        @Size(min = 5, max = 10, message = "USER_FIRST_NAME_INVALID")
         String first_name,
 
-        @Size(min = 6, max = 9, message = "USER_MIDDLE_NAME_INVALID")
+        @Size(min = 5, max = 10, message = "USER_MIDDLE_NAME_INVALID")
         String middle_name,
 
-        @Size(min = 6, max = 9, message = "USER_LAST_NAME_INVALID")
+        @Size(min = 5, max = 10, message = "USER_LAST_NAME_INVALID")
         String last_name,
 
         @NotNull
@@ -30,7 +30,7 @@ public record UserRequest(
         @Size(min = 8, message = "INVALID_PASSWORD")// get from ErrorStatus Code
         String password_hash,
 
-        @DobConstraints(min = 18,message = "DOB_EXCEPTION")
+        @DobConstraints(min = 18,max = 80,message = "DOB_EXCEPTION")
         LocalDate dob,
 
         String registered_at,

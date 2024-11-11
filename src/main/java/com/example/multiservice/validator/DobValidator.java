@@ -13,23 +13,47 @@ public class DobValidator implements ConstraintValidator<DobConstraints, LocalDa
 
 
     private int min;
+    private int max;
+
 
     @Override// init
     public void initialize(DobConstraints constraintAnnotation) {
         ConstraintValidator.super.initialize(constraintAnnotation);
         min = constraintAnnotation.min();
+        max = constraintAnnotation.max();
     }
 
     @Override
     public boolean isValid(LocalDate value, ConstraintValidatorContext constraintValidatorContext) {
 
         if (Objects.isNull(value)) {
-            return true;//We will allow the user to enter null, since they probably won't want to enter a date of birth.
-        }
+            return true;    // Allow null date of birth (user might choose not to provide it)
 
+        }
+        // Calculate the user's age based on the date of birth
         //long userCurrentAge = LocalDate.now().getYear() - value.getYear();
         long userCurrentAge = ChronoUnit.YEARS.between(value, LocalDate.now());
 
-        return userCurrentAge >= min;
+
+
+
+        return userCurrentAge >= min && userCurrentAge <= max;
+    }
+
+    /**
+     * Method to parse age limits from a "min-max" formatted string.
+     * @param range String in the format "min-max".
+     * @return An integer array containing min and max values, or null if format is invalid.
+     */
+    private int[] parseAgeRange(String range) {
+        if (range == null || !range.matches("\\d+-\\d+")) {
+            return null; // Return null if format is incorrect, example: 16-80
+        }
+
+        String[] minMax = range.split("-");
+        int min = Integer.parseInt(minMax[0].trim());
+        int max = Integer.parseInt(minMax[1].trim());
+
+        return new int[]{min, max};
     }
 }
