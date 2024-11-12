@@ -36,10 +36,12 @@ public class SecurityConfig {
     protected   String secretKey;
 
 
+    private CustomJwtDecoder jwtDecoder;
+
 
     // Identify which endpoints need protection
     private final String[] PUBLIC_ENDPOINTS = {
-            "/users","/auth/token","/auth/introspect"
+            "/users","/auth/token","/auth/introspect","/auth/logout"
     };
 
 @Bean
@@ -63,7 +65,7 @@ public class SecurityConfig {
         httpSecurity.oauth2ResourceServer(oauth2 ->
                 oauth2.jwt(jwtConfigurer ->
                         jwtConfigurer
-                                .decoder(jwtdecoder())
+                                .decoder(jwtDecoder)
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter())
 
                 ).authenticationEntryPoint(new JwtAuthenticationEntryPoint())
@@ -89,15 +91,15 @@ public class SecurityConfig {
 
     }
 
-    @Bean
-    JwtDecoder jwtdecoder() {
-        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), "HS512");
-
-
-        return NimbusJwtDecoder
-                .withSecretKey(secretKeySpec)
-                .macAlgorithm(MacAlgorithm.HS512)
-                .build();
-    }
+//    @Bean
+//    JwtDecoder jwtdecoder() {
+//        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), "HS512");
+//
+//
+//        return NimbusJwtDecoder
+//                .withSecretKey(secretKeySpec)
+//                .macAlgorithm(MacAlgorithm.HS512)
+//                .build();
+//    }
 
 }
