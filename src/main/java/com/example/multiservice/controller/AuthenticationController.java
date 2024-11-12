@@ -3,6 +3,7 @@ package com.example.multiservice.controller;
 import com.example.multiservice.dto.request.AuthenticationRequest;
 import com.example.multiservice.dto.request.IntrospectRequest;
 import com.example.multiservice.dto.request.LogoutRequest;
+import com.example.multiservice.dto.request.RefreshTokenRequest;
 import com.example.multiservice.dto.response.ApiResponse;
 import com.example.multiservice.dto.response.AuthenticationResponse;
 import com.example.multiservice.dto.response.IntrospectResponse;
@@ -49,5 +50,15 @@ public class AuthenticationController {
 
         return ApiResponse.<Void>builder().build();
     }
+
+
+    @PostMapping("/refresh")
+    ApiResponse<AuthenticationResponse> logout(@RequestBody RefreshTokenRequest request) {
+      var rs =  authenService.refreshToken(request);
+
+        return ApiResponse.<AuthenticationResponse>builder().result(rs).build();
+    }
+
+
 
 }

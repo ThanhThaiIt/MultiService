@@ -4,6 +4,7 @@ import com.example.multiservice.dto.UserWithRolesDTO;
 import com.example.multiservice.dto.request.AuthenticationRequest;
 import com.example.multiservice.dto.request.IntrospectRequest;
 import com.example.multiservice.dto.request.LogoutRequest;
+import com.example.multiservice.dto.request.RefreshTokenRequest;
 import com.example.multiservice.dto.response.AuthenticationResponse;
 import com.example.multiservice.dto.response.IntrospectResponse;
 import com.example.multiservice.entity.InvalidateToken;
@@ -113,6 +114,40 @@ public class AuthenServiceImpl implements AuthenService {
         }
 
 
+    }
+
+    @Override
+    public AuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
+        var token ="";
+        try {
+            SignedJWT signedJWT = jwtUtils.verifyToken(refreshTokenRequest.token());
+            String jwtTokenId = signedJWT.getJWTClaimsSet().getJWTID();
+            Date expirationDate = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+            InvalidateToken invalidateToken = InvalidateToken.builder()
+                    .id(jwtTokenId)
+                    .expiryDate(expirationDate)
+                    .build();
+
+            tokenRepository.save(invalidateToken);
+
+            var emailUser = signedJWT.getJWTClaimsSet().getSubject();
+
+            UserEntity userEntity = userRepository.findByEmail(emailUser).orElseThrow(() -> new AppException(ErrorStatusCode.USER_NOT_FOUND));
+             token = jwtUtils.generateToken(userEntity);
+
+
+
+        } catch (JOSEException e) {
+            throw new AppException(ErrorStatusCode.JWT_VERIFICATION_FAILED);
+        } catch (ParseException e) {
+            throw new AppException(ErrorStatusCode.IN_CORRECT_FORMAT_JWT);// in correct format jwt
+        }
+
+
+        return AuthenticationResponse.builder()
+                .token(token)
+                .build();
     }
 
 

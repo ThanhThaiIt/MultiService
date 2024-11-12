@@ -41,7 +41,7 @@ public class SecurityConfig {
 
     // Identify which endpoints need protection
     private final String[] PUBLIC_ENDPOINTS = {
-            "/users","/auth/token","/auth/introspect","/auth/logout"
+            "/users","/auth/token","/auth/introspect","/auth/logout","/auth/refresh"
     };
 
 @Bean
