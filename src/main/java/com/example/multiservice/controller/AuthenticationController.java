@@ -2,6 +2,7 @@ package com.example.multiservice.controller;
 
 import com.example.multiservice.dto.request.AuthenticationRequest;
 import com.example.multiservice.dto.request.IntrospectRequest;
+import com.example.multiservice.dto.request.LogoutRequest;
 import com.example.multiservice.dto.response.ApiResponse;
 import com.example.multiservice.dto.response.AuthenticationResponse;
 import com.example.multiservice.dto.response.IntrospectResponse;
@@ -39,6 +40,14 @@ public class AuthenticationController {
                 .result(result)
                 .build();
 
+    }
+
+
+    @PostMapping("/logout")
+    ApiResponse<Void> logout(@RequestBody LogoutRequest logoutRequest) {
+        authenService.logout(logoutRequest);
+
+        return ApiResponse.<Void>builder().build();
     }
 
 }

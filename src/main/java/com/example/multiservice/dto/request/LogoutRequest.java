@@ -1,10 +1,8 @@
 package com.example.multiservice.dto.request;
 
-import lombok.Builder;
 
-@Builder
-public record IntrospectRequest(
 
+public record LogoutRequest(
         String token
 ) {
 }

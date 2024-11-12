@@ -22,7 +22,7 @@ public enum ErrorStatusCode {
     USER_FIRST_NAME_INVALID(1002, "First Name must be At Least {min} characters and Maximum {max} characters",HttpStatus.BAD_REQUEST),
     USER_MIDDLE_NAME_INVALID(1003, "Middle Name must be At Least {min} characters and Maximum {max} characters",HttpStatus.BAD_REQUEST),
     USER_LAST_NAME_INVALID(1004, "Last Name must be At Least {min} characters and Maximum {max} characters",HttpStatus.BAD_REQUEST),
-    INVALID_PASSWORD(1005, "Password must be At Least 8 character",HttpStatus.BAD_REQUEST),
+    INVALID_PASSWORD(1005, "Password must be At Least {min} character",HttpStatus.BAD_REQUEST),
 
 
 
@@ -32,12 +32,14 @@ public enum ErrorStatusCode {
     IN_CORRECT_FORMAT_JWT(1008, "InCorrect Format JWT",HttpStatus.BAD_REQUEST),
     TOKEN_EXPIRED(1009, "Token Expired, Please Sign-In again",HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED_CLIENT(1010, "User Do Not Have Permission",HttpStatus.FORBIDDEN),
+    JWT_VERIFICATION_FAILED(8888,"JWT verification failed",HttpStatus.UNAUTHORIZED),
+
 
 
     // Permission
-    PERMISSION_NOT_FOUND(1011, "Permission Not Found",HttpStatus.NOT_FOUND),
-    PERMISSION_ALREADY_EXISTS(1012, "Permission Already Exists",HttpStatus.BAD_REQUEST),
-    DUPLICATE_SLUG_EXCEPTION(1013, "Duplicate Key SLUG Exception",HttpStatus.BAD_REQUEST),
+    PERMISSION_NOT_FOUND(1011, "Permission: Not Found",HttpStatus.NOT_FOUND),
+    PERMISSION_ALREADY_EXISTS(1012, "Permission: Already Exists",HttpStatus.BAD_REQUEST),
+    DUPLICATE_SLUG_EXCEPTION(1013, "Permission: Duplicate Key SLUG Exception",HttpStatus.BAD_REQUEST),
 
     //  Role
     ;

@@ -27,7 +27,7 @@ public record UserRequest(
         @NotNull
         String email,
 
-        @Size(min = 8, message = "INVALID_PASSWORD")// get from ErrorStatus Code
+        @Size(min = 4, message = "INVALID_PASSWORD")// get from ErrorStatus Code
         String password_hash,
 
         @DobConstraints(min = 18,max = 80,message = "DOB_EXCEPTION")
