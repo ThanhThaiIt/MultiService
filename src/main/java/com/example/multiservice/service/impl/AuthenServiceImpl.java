@@ -74,7 +74,7 @@ public class AuthenServiceImpl implements AuthenService {
         boolean isValid = true;
         try {
 
-            jwtUtils.verifyToken(introspectRequest.token());
+            jwtUtils.verifyToken(introspectRequest.token(),false);
 
 
         } catch (AppException appException) {
@@ -95,7 +95,7 @@ public class AuthenServiceImpl implements AuthenService {
 
 
         try {
-            SignedJWT signedJWT = jwtUtils.verifyToken(request.token());
+            SignedJWT signedJWT = jwtUtils.verifyToken(request.token(),true);
             String jwtTokenId = signedJWT.getJWTClaimsSet().getJWTID();
             Date expirationDate = signedJWT.getJWTClaimsSet().getExpirationTime();
 
@@ -111,6 +111,8 @@ public class AuthenServiceImpl implements AuthenService {
             throw new AppException(ErrorStatusCode.JWT_VERIFICATION_FAILED);
         } catch (ParseException e) {
             throw new AppException(ErrorStatusCode.IN_CORRECT_FORMAT_JWT);// in correct format jwt
+        }catch (AppException appException){
+            log.info("Token already expired");
         }
 
 
@@ -118,9 +120,9 @@ public class AuthenServiceImpl implements AuthenService {
 
     @Override
     public AuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
-        var token ="";
+        var token = "";
         try {
-            SignedJWT signedJWT = jwtUtils.verifyToken(refreshTokenRequest.token());
+            SignedJWT signedJWT = jwtUtils.verifyToken(refreshTokenRequest.token(),true);
             String jwtTokenId = signedJWT.getJWTClaimsSet().getJWTID();
             Date expirationDate = signedJWT.getJWTClaimsSet().getExpirationTime();
 
@@ -134,8 +136,7 @@ public class AuthenServiceImpl implements AuthenService {
             var emailUser = signedJWT.getJWTClaimsSet().getSubject();
 
             UserEntity userEntity = userRepository.findByEmail(emailUser).orElseThrow(() -> new AppException(ErrorStatusCode.USER_NOT_FOUND));
-             token = jwtUtils.generateToken(userEntity);
-
+            token = jwtUtils.generateToken(userEntity);
 
 
         } catch (JOSEException e) {

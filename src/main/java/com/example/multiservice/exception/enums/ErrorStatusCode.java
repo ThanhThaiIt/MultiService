@@ -33,7 +33,8 @@ public enum ErrorStatusCode {
     TOKEN_EXPIRED(1009, "Token Expired, Please Sign-In again",HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED_CLIENT(1010, "User Do Not Have Permission",HttpStatus.FORBIDDEN),
     JWT_VERIFICATION_FAILED(8888,"JWT verification failed",HttpStatus.UNAUTHORIZED),
-
+    JWT_EXPIRED_REFRESH(8888,"JWT expired, Can not refresh token",HttpStatus.UNAUTHORIZED),
+    JWT_LOGOUT_REFRESH(8888,"This JWT is logged out, cannot be refreshed.",HttpStatus.UNAUTHORIZED),
 
 
     // Permission

@@ -1,10 +1,6 @@
 package com.example.multiservice.utils;
 
-import com.example.multiservice.dto.request.IntrospectRequest;
-import com.example.multiservice.dto.response.IntrospectResponse;
-import com.example.multiservice.entity.InvalidateToken;
 import com.example.multiservice.entity.PermissionEntity;
-import com.example.multiservice.entity.RoleEntity;
 import com.example.multiservice.entity.UserEntity;
 import com.example.multiservice.exception.AppException;
 import com.example.multiservice.exception.enums.ErrorStatusCode;
@@ -27,6 +23,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Component
@@ -35,11 +32,21 @@ import java.util.*;
 
 public class JwtUtils {
     private static final Logger log = LoggerFactory.getLogger(JwtUtils.class);
-    long EXPIRATION_TIME = 60 * 60 * 1000; //1 p
+
+
+    @NonFinal// marking to do not let Inject vào Contructor
+    @Value("${jwt.expiration-time}")
+    long EXPIRATION_TIME; //1 p
 
     @NonFinal// marking to do not let Inject vào Contructor
     @Value("${jwt.secret.key}")
-    protected String secrect;
+    protected String SECRET_KEY;
+
+
+    @NonFinal// marking to do not let Inject vào Contructor
+    @Value("${jwt.refreshable-duration}")
+    protected long REFRESHABLE_DURATION;
+
 
     PermissionRepository permissionRepository;
 
@@ -53,7 +60,7 @@ public class JwtUtils {
                 .subject(userEntity.getEmail())
                 .issuer("multiservice.com")// who issue
                 .issueTime(new Date())
-                .expirationTime(new Date(Instant.now().toEpochMilli() + EXPIRATION_TIME))
+                .expirationTime(new Date(Instant.now().plus(EXPIRATION_TIME, ChronoUnit.SECONDS).toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())// 32 character randomly
                 .claim("scope", buildScopes(userEntity))
                 .build();
@@ -62,7 +69,7 @@ public class JwtUtils {
 
         JWSObject jwsObject = new JWSObject(jwsHeader, payload);
         try {
-            jwsObject.sign(new MACSigner(secrect.getBytes()));
+            jwsObject.sign(new MACSigner(SECRET_KEY.getBytes()));
             return jwsObject.serialize();// serialize into string
         } catch (JOSEException e) {
             log.error("Can not create JWT object", e);
@@ -71,22 +78,34 @@ public class JwtUtils {
 
     }
 
-    public SignedJWT verifyToken(String token) throws JOSEException, ParseException {
+
+    //purpose: will return "SignedJWT" if token is valid,
+    // signature(digital signature) is valid,
+    // not in invalidatetoken table (token is logged out)
+    public SignedJWT verifyToken(String token,boolean isRefresh) throws JOSEException, ParseException {
 
         // Initialize JWSVerifier to verify signature with secret key
-        JWSVerifier verifier = new MACVerifier(secrect.getBytes());
+        JWSVerifier verifier = new MACVerifier(SECRET_KEY.getBytes());
 
 
         // Parse the token into a SignedJWT object
         SignedJWT signedJWT = SignedJWT.parse(token);
 
         // get expire time from token return true false
-        Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        Date expirationTime =(isRefresh)
+                ? new Date(signedJWT.getJWTClaimsSet().getIssueTime().toInstant().plus(REFRESHABLE_DURATION,ChronoUnit.SECONDS).toEpochMilli())
+                : signedJWT.getJWTClaimsSet().getExpirationTime();
 
+
+        if (expirationTime != null && expirationTime.before(new Date())&& isRefresh) {
+            throw new AppException(ErrorStatusCode.JWT_EXPIRED_REFRESH);
+        }
 
         if (expirationTime != null && expirationTime.before(new Date())) {
             throw new AppException(ErrorStatusCode.TOKEN_EXPIRED);
         }
+
+
 
         // available function
         // return true or false: true if is correct token  and vice versa
@@ -95,7 +114,11 @@ public class JwtUtils {
             throw new AppException(ErrorStatusCode.UNAUTHENTICATED);
         }
 
-        if (invalidateTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())){
+        if (invalidateTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())&& isRefresh) {
+            throw new AppException(ErrorStatusCode.JWT_LOGOUT_REFRESH);
+        }
+
+        if (invalidateTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())) {
             throw new AppException(ErrorStatusCode.UNAUTHENTICATED);
         }
 
