@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,55 +21,49 @@ import java.util.List;
 @RequestMapping("/users")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class UserController {
 
-     UserService userService;
+    UserService userService;
 
     @PostMapping
-    public ApiResponse<String> createUser(@RequestBody @Valid UserRequest userRequest) {
-        //ApiResponse<String> apiResponse = new ApiResponse<>();
+    public ApiResponse<UserResponse> createUser(@RequestBody @Valid UserRequest userRequest) {
+        log.info("Controller: createUser");
 
-        String result ="";
-        if (userService.createUser(userRequest)){
-             result = "User Created";
-         }
-//        return apiResponse;
 
-        return ApiResponse.<String>builder().result(result).build();
+        return ApiResponse.<UserResponse>builder().result(userService.createUser(userRequest)).build();
     }
 
     @PutMapping
     public String updateUser(@RequestBody UserUpdateRequest userUpdateRequest) {
-        if (userService.updateUser(userUpdateRequest)){
+        if (userService.updateUser(userUpdateRequest)) {
             return "User updated";
         }
         return "User fail";
     }
 
     @GetMapping
-    public List<UserResponse> getAllUser(){
+    public List<UserResponse> getAllUser() {
         return userService.getAllUsers();
     }
 
     @GetMapping("/{userId}")
-    public UserResponse getUser(@PathVariable int userId){
+    public UserResponse getUser(@PathVariable int userId) {
         return userService.getUserById(userId);
     }
 
 
-
-
     @DeleteMapping("/{userId}")
-    public String deleteUser(@PathVariable int userId){
-        String resultMsg="";
-        if (userService.deleteUserById(userId)){
+    public String deleteUser(@PathVariable int userId) {
+        String resultMsg = "";
+        if (userService.deleteUserById(userId)) {
             resultMsg = "User deleted";
-        }else {
+        } else {
             resultMsg = "User fail";
 
         }
         return resultMsg;
-     }
+    }
 
     @GetMapping("/my-info")
     ApiResponse<UserResponse> getMyInfo() {
@@ -76,8 +71,6 @@ public class UserController {
                 .result(userService.getUserByEmail())
                 .build();
     }
-
-
 
 
 }

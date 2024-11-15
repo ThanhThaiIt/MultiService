@@ -4,12 +4,14 @@ package com.example.multiservice.dto.request;
 import com.example.multiservice.validator.constraints.DobConstraints;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+@Builder
 public record UserRequest(
 
         @Size(min = 5, max = 10, message = "USER_FIRST_NAME_INVALID")
