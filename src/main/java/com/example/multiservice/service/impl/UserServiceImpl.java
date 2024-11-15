@@ -60,9 +60,9 @@ RoleMapper roleMapper;
 //    private final UserRoleRepository userRoleRepository;
 
     @Override
-    public boolean createUser(UserRequest userRequest) {
-        boolean result = false;
+    public UserResponse createUser(UserRequest userRequest) {
 
+        log.info("Serivce: createUser");
         if (userRepository.existsByEmail(userRequest.email()) || userRepository.existsByMobile(userRequest.mobile())) {
             throw new AppException(ErrorStatusCode.USER_ALREADY_EXISTS);
         }
@@ -71,19 +71,44 @@ RoleMapper roleMapper;
         UserEntity userEntity = userMapper.toUser(userRequest);
         userEntity.setPassword_hash(passwordEncoder.encode(userRequest.password_hash()));
         userEntity.setActive(1);
-        var roles = roleRepository.findAllById(userRequest.roles());
-        userEntity.setRoles(roles);
+        var roless = roleRepository.findAllById(userRequest.roles());
+        userEntity.setRoles(roless);
 
 
         try {
-            userRepository.save(userEntity);
-            result = true;
-        } catch (RuntimeException e) {
+           var userEn = userRepository.save(userEntity);
+
+
+          var roles = roleRepository.findAllById(userRequest.roles());
+
+
+
+            List<RoleResponse> roleResponses = new ArrayList<>();
+
+            for (RoleEntity roleEntity : roles) {
+                List<PermissionEntity> permissionEntities= permissionRepository.findPermissionsByRoleId(roleEntity.getId());
+                List<PermissionResponse> permissionResponses = new ArrayList<>();
+
+                for (PermissionEntity permissionEntity : permissionEntities) {
+                    permissionResponses.add(permissionMapper.toPermissionResponse(permissionEntity));
+                }
+                RoleResponse roleResponse = roleMapper.roleToRoleResponse(roleEntity);
+                roleResponse.setPermissions(permissionResponses);
+                roleResponses.add(roleResponse);
+
+
+            }
+
+            UserResponse userResponse = userMapper.toUserResponse(userEn);
+            userResponse.setRoles(roleResponses);
+            return userResponse;
+
+         } catch (RuntimeException e) {
             throw new AppException(ErrorStatusCode.FAILED_CREATE);
         }
 
 
-        return result;
+
     }
 
     @Override

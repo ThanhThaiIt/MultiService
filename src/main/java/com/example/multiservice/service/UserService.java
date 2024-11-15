@@ -12,7 +12,7 @@ public interface UserService {
 
 
 
-      boolean createUser(UserRequest userRequest);
+      UserResponse createUser(UserRequest userRequest);
       boolean updateUser(UserUpdateRequest userUpdateRequest);
       UserResponse getUserById(int id);
       List<UserResponse> getAllUsers();
