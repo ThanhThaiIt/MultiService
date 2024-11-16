@@ -1,6 +1,13 @@
 package com.example.multiservice.service.impl;
 
-import com.example.multiservice.dto.UserWithRolesDTO;
+import java.text.ParseException;
+import java.util.Date;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.example.multiservice.dto.request.AuthenticationRequest;
 import com.example.multiservice.dto.request.IntrospectRequest;
 import com.example.multiservice.dto.request.LogoutRequest;
@@ -9,32 +16,19 @@ import com.example.multiservice.dto.response.AuthenticationResponse;
 import com.example.multiservice.dto.response.IntrospectResponse;
 import com.example.multiservice.entity.InvalidateToken;
 import com.example.multiservice.entity.UserEntity;
-
 import com.example.multiservice.exception.AppException;
 import com.example.multiservice.exception.enums.ErrorStatusCode;
 import com.example.multiservice.repository.InvalidateTokenRepository;
 import com.example.multiservice.repository.UserRepository;
-
 import com.example.multiservice.service.AuthenService;
 import com.example.multiservice.utils.JwtUtils;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jwt.SignedJWT;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.text.ParseException;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -45,14 +39,15 @@ public class AuthenServiceImpl implements AuthenService {
     UserRepository userRepository;
     JwtUtils jwtUtils;
     InvalidateTokenRepository tokenRepository;
-    //UserRoleRepository userRoleRepository;
-
+    // UserRoleRepository userRoleRepository;
 
     @Override
     public AuthenticationResponse Authenticate(AuthenticationRequest authenticationRequest) {
-        //var authentication = SecurityContextHolder.getContext().getAuthentication();
-        //log.info("Username: {}", authentication.getName());
-        var userEntity = userRepository.findByEmail(authenticationRequest.email()).orElseThrow(() -> new AppException(ErrorStatusCode.USER_NOT_FOUND));
+        // var authentication = SecurityContextHolder.getContext().getAuthentication();
+        // log.info("Username: {}", authentication.getName());
+        var userEntity = userRepository
+                .findByEmail(authenticationRequest.email())
+                .orElseThrow(() -> new AppException(ErrorStatusCode.USER_NOT_FOUND));
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
 
         boolean checkAuthen = passwordEncoder.matches(authenticationRequest.password(), userEntity.getPassword_hash());
@@ -60,12 +55,9 @@ public class AuthenServiceImpl implements AuthenService {
             throw new AppException(ErrorStatusCode.UNAUTHENTICATED);
         }
 
-
         var token = jwtUtils.generateToken(userEntity);
 
-        return AuthenticationResponse.builder()
-                .token(token)
-                .build();
+        return AuthenticationResponse.builder().token(token).build();
     }
 
     @Override
@@ -74,28 +66,24 @@ public class AuthenServiceImpl implements AuthenService {
         boolean isValid = true;
         try {
 
-            jwtUtils.verifyToken(introspectRequest.token(),false);
-
+            jwtUtils.verifyToken(introspectRequest.token(), false);
 
         } catch (AppException appException) {
             isValid = false;
         } catch (JOSEException e) {
             throw new AppException(ErrorStatusCode.JWT_VERIFICATION_FAILED);
         } catch (ParseException e) {
-            throw new AppException(ErrorStatusCode.IN_CORRECT_FORMAT_JWT);// in correct format jwt
+            throw new AppException(ErrorStatusCode.IN_CORRECT_FORMAT_JWT); // in correct format jwt
         }
 
-        return IntrospectResponse.builder()
-                .valid(isValid)
-                .build();
+        return IntrospectResponse.builder().valid(isValid).build();
     }
 
     @Override
     public void logout(LogoutRequest request) {
 
-
         try {
-            SignedJWT signedJWT = jwtUtils.verifyToken(request.token(),true);
+            SignedJWT signedJWT = jwtUtils.verifyToken(request.token(), true);
             String jwtTokenId = signedJWT.getJWTClaimsSet().getJWTID();
             Date expirationDate = signedJWT.getJWTClaimsSet().getExpirationTime();
 
@@ -106,23 +94,20 @@ public class AuthenServiceImpl implements AuthenService {
 
             tokenRepository.save(invalidateToken);
 
-
         } catch (JOSEException e) {
             throw new AppException(ErrorStatusCode.JWT_VERIFICATION_FAILED);
         } catch (ParseException e) {
-            throw new AppException(ErrorStatusCode.IN_CORRECT_FORMAT_JWT);// in correct format jwt
-        }catch (AppException appException){
+            throw new AppException(ErrorStatusCode.IN_CORRECT_FORMAT_JWT); // in correct format jwt
+        } catch (AppException appException) {
             log.info("Token already expired");
         }
-
-
     }
 
     @Override
     public AuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
         var token = "";
         try {
-            SignedJWT signedJWT = jwtUtils.verifyToken(refreshTokenRequest.token(),true);
+            SignedJWT signedJWT = jwtUtils.verifyToken(refreshTokenRequest.token(), true);
             String jwtTokenId = signedJWT.getJWTClaimsSet().getJWTID();
             Date expirationDate = signedJWT.getJWTClaimsSet().getExpirationTime();
 
@@ -135,21 +120,17 @@ public class AuthenServiceImpl implements AuthenService {
 
             var emailUser = signedJWT.getJWTClaimsSet().getSubject();
 
-            UserEntity userEntity = userRepository.findByEmail(emailUser).orElseThrow(() -> new AppException(ErrorStatusCode.USER_NOT_FOUND));
+            UserEntity userEntity = userRepository
+                    .findByEmail(emailUser)
+                    .orElseThrow(() -> new AppException(ErrorStatusCode.USER_NOT_FOUND));
             token = jwtUtils.generateToken(userEntity);
-
 
         } catch (JOSEException e) {
             throw new AppException(ErrorStatusCode.JWT_VERIFICATION_FAILED);
         } catch (ParseException e) {
-            throw new AppException(ErrorStatusCode.IN_CORRECT_FORMAT_JWT);// in correct format jwt
+            throw new AppException(ErrorStatusCode.IN_CORRECT_FORMAT_JWT); // in correct format jwt
         }
 
-
-        return AuthenticationResponse.builder()
-                .token(token)
-                .build();
+        return AuthenticationResponse.builder().token(token).build();
     }
-
-
 }

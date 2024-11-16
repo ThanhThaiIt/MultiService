@@ -1,11 +1,8 @@
 package com.example.multiservice.dto;
 
-import com.example.multiservice.entity.RoleEntity;
-import com.example.multiservice.entity.UserEntity;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
 import java.util.List;
+
+import lombok.Data;
 
 @Data
 public class UserWithRolesDTO {

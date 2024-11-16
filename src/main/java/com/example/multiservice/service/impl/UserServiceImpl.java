@@ -1,5 +1,16 @@
 package com.example.multiservice.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.example.multiservice.dto.request.UserRequest;
 import com.example.multiservice.dto.request.UserUpdateRequest;
 import com.example.multiservice.dto.response.PermissionResponse;
@@ -16,25 +27,13 @@ import com.example.multiservice.mapper.UserMapper;
 import com.example.multiservice.repository.PermissionRepository;
 import com.example.multiservice.repository.RoleRepository;
 import com.example.multiservice.repository.UserRepository;
- import com.example.multiservice.service.UserService;
+import com.example.multiservice.service.UserService;
 import com.example.multiservice.utils.DateTimeUtils;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PostAuthorize;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -52,12 +51,12 @@ public class UserServiceImpl implements UserService {
 
     RoleRepository roleRepository;
 
-PermissionRepository permissionRepository;
-PermissionMapper permissionMapper;
-RoleMapper roleMapper;
+    PermissionRepository permissionRepository;
+    PermissionMapper permissionMapper;
+    RoleMapper roleMapper;
 
-//    UserRoleRepository roleRepository;
-//    private final UserRoleRepository userRoleRepository;
+    //    UserRoleRepository roleRepository;
+    //    private final UserRoleRepository userRoleRepository;
 
     @Override
     public UserResponse createUser(UserRequest userRequest) {
@@ -67,26 +66,22 @@ RoleMapper roleMapper;
             throw new AppException(ErrorStatusCode.USER_ALREADY_EXISTS);
         }
 
-
         UserEntity userEntity = userMapper.toUser(userRequest);
         userEntity.setPassword_hash(passwordEncoder.encode(userRequest.password_hash()));
         userEntity.setActive(1);
         var roleEntities = roleRepository.findAllById(userRequest.roles());
         userEntity.setRoles(roleEntities);
 
-
         try {
-           var userEn = userRepository.save(userEntity);
+            var userEn = userRepository.save(userEntity);
 
-
-          var roles = roleRepository.findAllById(userRequest.roles());
-
-
+            var roles = roleRepository.findAllById(userRequest.roles());
 
             List<RoleResponse> roleResponses = new ArrayList<>();
 
             for (RoleEntity roleEntity : roles) {
-                List<PermissionEntity> permissionEntities= permissionRepository.findPermissionsByRoleId(roleEntity.getId());
+                List<PermissionEntity> permissionEntities =
+                        permissionRepository.findPermissionsByRoleId(roleEntity.getId());
                 List<PermissionResponse> permissionResponses = new ArrayList<>();
 
                 for (PermissionEntity permissionEntity : permissionEntities) {
@@ -95,20 +90,15 @@ RoleMapper roleMapper;
                 RoleResponse roleResponse = roleMapper.roleToRoleResponse(roleEntity);
                 roleResponse.setPermissions(permissionResponses);
                 roleResponses.add(roleResponse);
-
-
             }
 
             UserResponse userResponse = userMapper.toUserResponse(userEn);
             userResponse.setRoles(roleResponses);
             return userResponse;
 
-         } catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             throw new AppException(ErrorStatusCode.FAILED_CREATE);
         }
-
-
-
     }
 
     @Override
@@ -123,7 +113,6 @@ RoleMapper roleMapper;
         userEntity.setPassword_hash(passwordEncoder.encode(userRequest.password_hash()));
         var roles = roleRepository.findAllById(userRequest.roles());
         userEntity.setRoles(roles);
-
 
         if (userRequest.active() == 1 || userRequest.active() == 0) {
             userEntity.setActive(userRequest.active());
@@ -149,11 +138,10 @@ RoleMapper roleMapper;
         }
         UserResponse userResponse = userMapper.toUserResponse(userEntity);
         return userResponse;
-
     }
 
     @Override
-    //@PreAuthorize("hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
     @PreAuthorize("hasAnyAuthority('create_post')")
     public List<UserResponse> getAllUsers() {
 
@@ -173,7 +161,8 @@ RoleMapper roleMapper;
             List<RoleResponse> roleResponses = new ArrayList<>();
 
             for (RoleEntity roleEntity : roles) {
-                List<PermissionEntity> permissionEntities= permissionRepository.findPermissionsByRoleId(roleEntity.getId());
+                List<PermissionEntity> permissionEntities =
+                        permissionRepository.findPermissionsByRoleId(roleEntity.getId());
                 List<PermissionResponse> permissionResponses = new ArrayList<>();
 
                 for (PermissionEntity permissionEntity : permissionEntities) {
@@ -182,23 +171,14 @@ RoleMapper roleMapper;
                 RoleResponse roleResponse = roleMapper.roleToRoleResponse(roleEntity);
                 roleResponse.setPermissions(permissionResponses);
                 roleResponses.add(roleResponse);
-
-
             }
-
-
-
 
             UserResponse userResponse = userMapper.toUserResponse(userEntity);
             userResponse.setRoles(roleResponses);
             userResponses.add(userResponse);
-
         }
 
-
         return userResponses;
-
-
     }
 
     @Override
@@ -219,13 +199,16 @@ RoleMapper roleMapper;
 
         return result;
     }
-
+    // spotless:off
     @Override
     public UserResponse getUserByEmail() {
         var context = SecurityContextHolder.getContext();
         String name = context.getAuthentication().getName();
-        UserEntity userEntity = userRepository.findByEmail(name).orElseThrow(() -> new AppException(ErrorStatusCode.USER_NOT_FOUND));
+        UserEntity userEntity =
+                userRepository.findByEmail(name).orElseThrow(() -> new AppException(ErrorStatusCode.USER_NOT_FOUND));
         UserResponse userResponse = userMapper.toUserResponse(userEntity);
         return userResponse;
     }
+    //spotless:on
+
 }

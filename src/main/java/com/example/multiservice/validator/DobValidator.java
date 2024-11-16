@@ -1,22 +1,20 @@
 package com.example.multiservice.validator;
 
-import com.example.multiservice.validator.constraints.DobConstraints;
-import jakarta.validation.ConstraintValidator;
-import jakarta.validation.ConstraintValidatorContext;
-
-import java.lang.annotation.Annotation;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
-public class DobValidator implements ConstraintValidator<DobConstraints, LocalDate> {
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
+import com.example.multiservice.validator.constraints.DobConstraints;
+
+public class DobValidator implements ConstraintValidator<DobConstraints, LocalDate> {
 
     private int min;
     private int max;
 
-
-    @Override// init
+    @Override // init
     public void initialize(DobConstraints constraintAnnotation) {
         ConstraintValidator.super.initialize(constraintAnnotation);
         min = constraintAnnotation.min();
@@ -27,15 +25,11 @@ public class DobValidator implements ConstraintValidator<DobConstraints, LocalDa
     public boolean isValid(LocalDate value, ConstraintValidatorContext constraintValidatorContext) {
 
         if (Objects.isNull(value)) {
-            return true;    // Allow null date of birth (user might choose not to provide it)
-
+            return true; // Allow null date of birth (user might choose not to provide it)
         }
         // Calculate the user's age based on the date of birth
-        //long userCurrentAge = LocalDate.now().getYear() - value.getYear();
+        // long userCurrentAge = LocalDate.now().getYear() - value.getYear();
         long userCurrentAge = ChronoUnit.YEARS.between(value, LocalDate.now());
-
-
-
 
         return userCurrentAge >= min && userCurrentAge <= max;
     }
@@ -54,6 +48,6 @@ public class DobValidator implements ConstraintValidator<DobConstraints, LocalDa
         int min = Integer.parseInt(minMax[0].trim());
         int max = Integer.parseInt(minMax[1].trim());
 
-        return new int[]{min, max};
+        return new int[] {min, max};
     }
 }

@@ -1,10 +1,11 @@
 package com.example.multiservice.service;
 
-import com.example.multiservice.dto.request.RoleRequest;
-import com.example.multiservice.dto.response.RoleResponse;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import com.example.multiservice.dto.request.RoleRequest;
+import com.example.multiservice.dto.response.RoleResponse;
 
 @Service
 public interface RoleService {
