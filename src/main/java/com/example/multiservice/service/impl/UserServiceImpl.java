@@ -71,8 +71,8 @@ RoleMapper roleMapper;
         UserEntity userEntity = userMapper.toUser(userRequest);
         userEntity.setPassword_hash(passwordEncoder.encode(userRequest.password_hash()));
         userEntity.setActive(1);
-        var roless = roleRepository.findAllById(userRequest.roles());
-        userEntity.setRoles(roless);
+        var roleEntities = roleRepository.findAllById(userRequest.roles());
+        userEntity.setRoles(roleEntities);
 
 
         try {

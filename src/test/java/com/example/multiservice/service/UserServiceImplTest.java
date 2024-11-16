@@ -17,9 +17,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Optional;
 
 
 import org.mockito.Mockito;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -44,6 +46,7 @@ public class UserServiceImplTest {
 
     private UserResponse userResponse;
     private UserEntity userEntity;
+
     @BeforeEach
     void initData() {
 
@@ -125,7 +128,7 @@ public class UserServiceImplTest {
         when(userRepository.save(any())).thenReturn(userEntity);
 
         //When
-       var response  = userService.createUser(userRequest);
+        var response = userService.createUser(userRequest);
 
         //Then
         Assertions.assertThat(response.getId()).isEqualTo(20);
@@ -145,5 +148,34 @@ public class UserServiceImplTest {
 
         Assertions.assertThat(exception.getErrorStatusCode().getCode()).isEqualTo(1006);
         Assertions.assertThat(exception.getErrorStatusCode().getMessage()).isEqualTo("User Already Exists");
+    }
+
+    @Test
+    @WithMockUser(username = "ccccc@gmail.com")
+    void getInfo_validRequest_Success() {
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(userEntity));
+
+        var response = userService.getUserByEmail();
+
+        System.out.println(response.getEmail());
+
+        Assertions.assertThat(response.getId()).isEqualTo(20);
+        Assertions.assertThat(response.getEmail()).isEqualTo("nguyen@gmail.com");
+    }
+
+
+    @Test
+    @WithMockUser(username = "ccccc@gmail.com")
+    void getInfo_NotFoundUser_Fail() {
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.ofNullable(null));
+
+
+        var exception = assertThrows(AppException.class, () -> userService.getUserByEmail());
+        System.out.println(exception.getErrorStatusCode().getCode());
+        System.out.println(exception.getErrorStatusCode().getMessage());
+
+        Assertions.assertThat(exception.getErrorStatusCode().getCode()).isEqualTo(1000);
+        Assertions.assertThat(exception.getErrorStatusCode().getMessage()).isEqualTo("User Not Found");
+
     }
 }
