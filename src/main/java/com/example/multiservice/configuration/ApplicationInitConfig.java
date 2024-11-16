@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.example.multiservice.entity.UserEntity;
-import com.example.multiservice.exception.enums.UserRole;
 import com.example.multiservice.repository.RolePermissionRepository;
 import com.example.multiservice.repository.UserRepository;
 
@@ -37,7 +36,6 @@ public class ApplicationInitConfig {
 
         log.info(" Running in ApplicationInitConfig");
         return args -> {
-            var role = UserRole.ADMIN.getId();
             if (userRepository.findByEmail("admin@admin.com").isEmpty()) {
                 UserEntity userEntity = UserEntity.builder()
                         .email("admin@admin.com")
@@ -47,8 +45,6 @@ public class ApplicationInitConfig {
                         .active(1)
                         .build();
                 userRepository.save(userEntity);
-
-                // userRoleRepository.insertUserRole(userEntity.getId(),1);
 
                 log.warn("admin user has been created with default password: admin, please change it");
             }
