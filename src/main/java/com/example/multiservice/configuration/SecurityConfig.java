@@ -10,7 +10,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -23,10 +22,11 @@ public class SecurityConfig {
     @Value("${jwt.secret.key}")
     protected String secretKey;
 
+
     private CustomJwtDecoder jwtDecoder;
 
     // Identify which endpoints need protection
-    private final String[] PUBLIC_ENDPOINTS = {
+    private static final String[] PUBLIC_ENDPOINTS = {
         "/users", "/auth/token", "/auth/introspect", "/auth/logout", "/auth/refresh"
     };
 
@@ -43,7 +43,6 @@ public class SecurityConfig {
         httpSecurity.authorizeRequests(authorizeRequests -> authorizeRequests
                 .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
                 .permitAll()
-                // .requestMatchers(HttpMethod.GET, "/users").hasRole(UserRole.ADMIN.getName())
                 .anyRequest()
                 .authenticated());
 
