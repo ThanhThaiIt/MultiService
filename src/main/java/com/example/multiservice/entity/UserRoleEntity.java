@@ -1,19 +1,19 @@
-//package com.example.multiservice.entity;
+// package com.example.multiservice.entity;
 //
 //
-//import com.example.multiservice.entity.keys.UserRoleKey;
-//import jakarta.persistence.*;
-//import lombok.*;
-//import lombok.experimental.FieldDefaults;
+// import com.example.multiservice.entity.keys.UserRoleKey;
+// import jakarta.persistence.*;
+// import lombok.*;
+// import lombok.experimental.FieldDefaults;
 //
-//@Data
-//@AllArgsConstructor
-//@NoArgsConstructor
-//@Builder
-//@FieldDefaults(level = AccessLevel.PRIVATE)
+// @Data
+// @AllArgsConstructor
+// @NoArgsConstructor
+// @Builder
+// @FieldDefaults(level = AccessLevel.PRIVATE)
 //
-//@Entity(name = "user_roles")
-//public class UserRoleEntity {
+// @Entity(name = "user_roles")
+// public class UserRoleEntity {
 //
 //    @EmbeddedId
 //     UserRoleKey userRoleKey;
@@ -37,4 +37,4 @@
 //                ", roleId=" + (roleEntity != null ? roleEntity.getId() : null) +
 //                '}';
 //    }
-//}
+// }

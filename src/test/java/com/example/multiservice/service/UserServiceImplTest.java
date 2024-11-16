@@ -1,17 +1,9 @@
 package com.example.multiservice.service;
 
-import com.example.multiservice.dto.request.UserRequest;
-import com.example.multiservice.dto.response.UserResponse;
-import com.example.multiservice.entity.UserEntity;
-import com.example.multiservice.exception.AppException;
-import com.example.multiservice.repository.UserRepository;
-import org.assertj.core.api.Assertions;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,15 +11,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
 
-
-import org.mockito.Mockito;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-
+import com.example.multiservice.dto.request.UserRequest;
+import com.example.multiservice.dto.response.UserResponse;
+import com.example.multiservice.entity.UserEntity;
+import com.example.multiservice.exception.AppException;
+import com.example.multiservice.repository.UserRepository;
 
 @SpringBootTest
 @TestPropertySource("/test.properties")
@@ -42,7 +39,6 @@ public class UserServiceImplTest {
     // request
     private UserRequest userRequest;
     private UserRequest badUserRequest;
-
 
     private UserResponse userResponse;
     private UserEntity userEntity;
@@ -83,7 +79,6 @@ public class UserServiceImplTest {
                 .social_links("https://www.facebook.com")
                 .build();
 
-
         badUserRequest = UserRequest.builder()
                 .first_name("ngn")
                 .middle_name("vannnn")
@@ -116,34 +111,32 @@ public class UserServiceImplTest {
                 .avatar_url("https://www.google.com")
                 .social_links("https://www.facebook.com")
                 .build();
-
     }
 
     @Test
     void createUser_validRequest_Success() {
 
-        //Given
+        // Given
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
         when(userRepository.existsByMobile(anyString())).thenReturn(false);
         when(userRepository.save(any())).thenReturn(userEntity);
 
-        //When
+        // When
         var response = userService.createUser(userRequest);
 
-        //Then
+        // Then
         Assertions.assertThat(response.getId()).isEqualTo(20);
         Assertions.assertThat(response.getFirst_name()).isEqualTo("nguyennn");
     }
 
-
     @Test
     void createUser_userExist_invalidRequest_Fail() {
 
-        //Given
+        // Given
         when(userRepository.existsByEmail(anyString())).thenReturn(true);
         when(userRepository.existsByMobile(anyString())).thenReturn(true);
 
-        //When
+        // When
         var exception = assertThrows(AppException.class, () -> userService.createUser(userRequest));
 
         Assertions.assertThat(exception.getErrorStatusCode().getCode()).isEqualTo(1006);
@@ -163,12 +156,10 @@ public class UserServiceImplTest {
         Assertions.assertThat(response.getEmail()).isEqualTo("nguyen@gmail.com");
     }
 
-
     @Test
     @WithMockUser(username = "ccccc@gmail.com")
     void getInfo_NotFoundUser_Fail() {
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.ofNullable(null));
-
 
         var exception = assertThrows(AppException.class, () -> userService.getUserByEmail());
         System.out.println(exception.getErrorStatusCode().getCode());
@@ -176,6 +167,5 @@ public class UserServiceImplTest {
 
         Assertions.assertThat(exception.getErrorStatusCode().getCode()).isEqualTo(1000);
         Assertions.assertThat(exception.getErrorStatusCode().getMessage()).isEqualTo("User Not Found");
-
     }
 }

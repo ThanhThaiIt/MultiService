@@ -10,6 +10,4 @@ public record RoleRequest(
         String created_at,
         String updated_at,
         String content,
-        List<Integer> permission
-) {
-}
+        List<Integer> permission) {}

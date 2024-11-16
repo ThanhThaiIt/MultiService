@@ -1,14 +1,7 @@
 package com.example.multiservice.configuration;
 
-import com.example.multiservice.entity.RoleEntity;
-import com.example.multiservice.entity.UserEntity;
- import com.example.multiservice.exception.enums.UserRole;
-import com.example.multiservice.repository.RolePermissionRepository;
-import com.example.multiservice.repository.UserRepository;
- import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -16,10 +9,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import com.example.multiservice.entity.UserEntity;
+import com.example.multiservice.exception.enums.UserRole;
+import com.example.multiservice.repository.RolePermissionRepository;
+import com.example.multiservice.repository.UserRepository;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -27,17 +25,20 @@ import java.util.List;
 @Slf4j
 public class ApplicationInitConfig {
 
+    PasswordEncoder passwordEncoder;
 
-     PasswordEncoder passwordEncoder ;
+    @Bean
+    @ConditionalOnProperty(
+            prefix = "spring",
+            value = "datasource.driver-class-name",
+            havingValue = "com.mysql.cj.jdbc.Driver")
+    ApplicationRunner applicationRunner(
+            UserRepository userRepository, RolePermissionRepository rolePermissionRepository) {
 
-     @Bean
-     @ConditionalOnProperty(prefix = "spring",value = "datasource.driver-class-name",havingValue = "com.mysql.cj.jdbc.Driver")
-    ApplicationRunner applicationRunner(UserRepository userRepository, RolePermissionRepository rolePermissionRepository){
-
-         log.info(" Running in ApplicationInitConfig");
+        log.info(" Running in ApplicationInitConfig");
         return args -> {
             var role = UserRole.ADMIN.getId();
-            if (userRepository.findByEmail("admin@admin.com").isEmpty()){
+            if (userRepository.findByEmail("admin@admin.com").isEmpty()) {
                 UserEntity userEntity = UserEntity.builder()
                         .email("admin@admin.com")
                         .password_hash(passwordEncoder.encode("admin"))
@@ -47,12 +48,10 @@ public class ApplicationInitConfig {
                         .build();
                 userRepository.save(userEntity);
 
-                //userRoleRepository.insertUserRole(userEntity.getId(),1);
-
+                // userRoleRepository.insertUserRole(userEntity.getId(),1);
 
                 log.warn("admin user has been created with default password: admin, please change it");
             }
         };
     }
-
 }

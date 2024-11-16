@@ -1,16 +1,15 @@
 package com.example.multiservice.service.impl;
 
-import com.example.multiservice.repository.InvalidateTokenRepository;
-import com.example.multiservice.service.InvalidateTokenService;
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import com.example.multiservice.repository.InvalidateTokenRepository;
+import com.example.multiservice.service.InvalidateTokenService;
 
 @Service
 public class InvalidateTokenServiceImpl implements InvalidateTokenService {
-
-
 
     @Autowired
     private InvalidateTokenRepository invalidateTokenRepository;

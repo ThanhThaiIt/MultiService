@@ -1,10 +1,10 @@
 package com.example.multiservice.controller;
 
-import com.example.multiservice.dto.request.UserRequest;
-import com.example.multiservice.dto.response.UserResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +20,12 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
+import com.example.multiservice.dto.request.UserRequest;
+import com.example.multiservice.dto.response.UserResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @SpringBootTest
@@ -31,10 +33,8 @@ import java.util.Arrays;
 @Testcontainers
 public class UserControllerIntegrationTest {
 
-
     @Container
     static final MySQLContainer<?> mysqlContainer = new MySQLContainer<>("mysql:latest");
-
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
@@ -43,25 +43,18 @@ public class UserControllerIntegrationTest {
         registry.add("spring.datasource.password", mysqlContainer::getPassword);
         registry.add("spring.datasource.driver-class-name", () -> mysqlContainer.getDriverClassName());
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "update");
-
-
-
     }
 
     @Autowired
     private MockMvc mockMvc;
-
-
-
-
 
     // request
     private UserRequest userRequest;
 
     private UserRequest badUserRequest;
 
-
     private UserResponse userResponse;
+
     @BeforeEach
     void initData() {
 
@@ -98,7 +91,6 @@ public class UserControllerIntegrationTest {
                 .social_links("https://www.facebook.com")
                 .build();
 
-
         badUserRequest = UserRequest.builder()
                 .first_name("ngn")
                 .middle_name("vannnn")
@@ -115,38 +107,27 @@ public class UserControllerIntegrationTest {
                 .social_links("https://www.facebook.com")
                 .roles(new ArrayList<>(Arrays.asList(1, 2)))
                 .build();
-
     }
-
 
     @Test
     void createUser_ValidRequest_Success() throws Exception {
 
-        //Given
+        // Given
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());// parse localdate
+        objectMapper.registerModule(new JavaTimeModule()); // parse localdate
         String contentJson = objectMapper.writeValueAsString(userRequest);
 
-
-
-        //When
-        var response= mockMvc.perform(MockMvcRequestBuilders
-                        .post("/users")
+        // When
+        var response = mockMvc.perform(MockMvcRequestBuilders.post("/users")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(contentJson)
-
-                ).andExpect(MockMvcResultMatchers.status().isOk())
+                        .content(contentJson))
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("result.first_name").value("nguyen"))
                 .andExpect(MockMvcResultMatchers.jsonPath("result.middle_name").value("vannnn"))
-                .andExpect(MockMvcResultMatchers.jsonPath("result.last_name").value("teonnnn"))
+                .andExpect(MockMvcResultMatchers.jsonPath("result.last_name").value("teonnnn"));
 
-        ;
-        //Then
+        // Then
 
-        log.info("resultR: "+response.andReturn().getResponse().getContentAsString());
-
+        log.info("resultR: " + response.andReturn().getResponse().getContentAsString());
     }
-
-
-
 }

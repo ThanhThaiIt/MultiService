@@ -1,5 +1,10 @@
 package com.example.multiservice.service.impl;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
 import com.example.multiservice.dto.request.PermissionRequest;
 import com.example.multiservice.dto.request.PermissionUpdRequest;
 import com.example.multiservice.dto.response.PermissionResponse;
@@ -9,23 +14,17 @@ import com.example.multiservice.exception.enums.ErrorStatusCode;
 import com.example.multiservice.mapper.PermissionMapper;
 import com.example.multiservice.repository.PermissionRepository;
 import com.example.multiservice.service.PermissionService;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
-
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class PermissionServiceImpl implements PermissionService {
-
 
     PermissionRepository permissionRepository;
     PermissionMapper permissionMapper;
@@ -47,7 +46,9 @@ public class PermissionServiceImpl implements PermissionService {
     public List<PermissionResponse> getAllPermissions() {
         var permissionEntities = permissionRepository.findAll();
 
-        return permissionEntities.stream().map(p -> permissionMapper.toPermissionResponse(p)).toList();
+        return permissionEntities.stream()
+                .map(p -> permissionMapper.toPermissionResponse(p))
+                .toList();
     }
 
     @Override
@@ -56,8 +57,6 @@ public class PermissionServiceImpl implements PermissionService {
         if (permissionRepository.existsById(id)) {
             permissionRepository.deleteById(id);
         } else throw new AppException(ErrorStatusCode.PERMISSION_NOT_FOUND);
-
-
     }
 
     @Override
@@ -66,7 +65,6 @@ public class PermissionServiceImpl implements PermissionService {
             throw new AppException(ErrorStatusCode.PERMISSION_NOT_FOUND);
         }
 
-
         try {
             var permissionEntity = permissionMapper.toPermissionEntityWithId(permissionUpdRequest);
             var rs = permissionRepository.save(permissionEntity);
@@ -74,8 +72,6 @@ public class PermissionServiceImpl implements PermissionService {
         } catch (RuntimeException e) {
             throw new AppException(ErrorStatusCode.FAILED_UPDATE);
         }
-
-
     }
 
     @Override
@@ -86,6 +82,4 @@ public class PermissionServiceImpl implements PermissionService {
         }
         throw new AppException(ErrorStatusCode.PERMISSION_NOT_FOUND);
     }
-
-
 }

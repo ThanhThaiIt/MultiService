@@ -1,25 +1,28 @@
 package com.example.multiservice.configuration;
 
-import com.example.multiservice.dto.response.ApiResponse;
-import com.example.multiservice.exception.enums.ErrorStatusCode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
-import javax.print.attribute.standard.Media;
-import java.io.IOException;
+import com.example.multiservice.dto.response.ApiResponse;
+import com.example.multiservice.exception.enums.ErrorStatusCode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+    public void commence(
+            HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
+            throws IOException, ServletException {
         ErrorStatusCode errorStatusCode = ErrorStatusCode.UNAUTHENTICATED;
         response.setStatus(errorStatusCode.getHttpStatusCode().value());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);// ContentType
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE); // ContentType
 
         ApiResponse<?> apiResponse = ApiResponse.builder()
                 .code(errorStatusCode.getCode())
@@ -27,8 +30,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                 .build();
 
         ObjectMapper objectMapper = new ObjectMapper();
-        response.getWriter().write(objectMapper.writeValueAsString(apiResponse));// parse to String
+        response.getWriter().write(objectMapper.writeValueAsString(apiResponse)); // parse to String
         response.flushBuffer();
-
     }
 }

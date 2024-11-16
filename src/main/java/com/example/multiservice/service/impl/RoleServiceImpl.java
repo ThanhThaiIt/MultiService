@@ -1,12 +1,15 @@
 package com.example.multiservice.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
 
 import com.example.multiservice.dto.request.RoleRequest;
 import com.example.multiservice.dto.response.PermissionResponse;
 import com.example.multiservice.dto.response.RoleResponse;
 import com.example.multiservice.entity.PermissionEntity;
 import com.example.multiservice.entity.RoleEntity;
-import com.example.multiservice.entity.RolePermissionEntity;
 import com.example.multiservice.exception.AppException;
 import com.example.multiservice.exception.enums.ErrorStatusCode;
 import com.example.multiservice.mapper.PermissionMapper;
@@ -15,17 +18,11 @@ import com.example.multiservice.repository.PermissionRepository;
 import com.example.multiservice.repository.RolePermissionRepository;
 import com.example.multiservice.repository.RoleRepository;
 import com.example.multiservice.service.RoleService;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,11 +39,9 @@ public class RoleServiceImpl implements RoleService {
     public RoleResponse create(RoleRequest role) {
         var entity = roleMapper.roleToRoleEntity(role);
 
-        var permissionEntities= permissionRepository.findAllByIdIn(role.permission());
+        var permissionEntities = permissionRepository.findAllByIdIn(role.permission());
 
-
-
-        var roleEntity= roleRepository.save(entity);
+        var roleEntity = roleRepository.save(entity);
         for (var permissionEntity : permissionEntities) {
             rolePermissionRepository.insertRolePermission(roleEntity.getId(), permissionEntity.getId());
         }
@@ -61,7 +56,8 @@ public class RoleServiceImpl implements RoleService {
         List<RoleResponse> roleResponses = new ArrayList<>();
 
         for (RoleEntity roleEntity : roles) {
-            List<PermissionEntity> permissionEntities= permissionRepository.findPermissionsByRoleId(roleEntity.getId());
+            List<PermissionEntity> permissionEntities =
+                    permissionRepository.findPermissionsByRoleId(roleEntity.getId());
             List<PermissionResponse> permissionResponses = new ArrayList<>();
 
             for (PermissionEntity permissionEntity : permissionEntities) {
@@ -70,8 +66,6 @@ public class RoleServiceImpl implements RoleService {
             RoleResponse roleResponse = roleMapper.roleToRoleResponse(roleEntity);
             roleResponse.setPermissions(permissionResponses);
             roleResponses.add(roleResponse);
-
-
         }
 
         return roleResponses;
@@ -82,8 +76,7 @@ public class RoleServiceImpl implements RoleService {
         try {
 
             if (!roleRepository.existsById(id)) {
-                throw  new AppException(ErrorStatusCode.NOT_FOUND);
-
+                throw new AppException(ErrorStatusCode.NOT_FOUND);
             }
             rolePermissionRepository.deleteByRoleId(id);
             roleRepository.deleteById(id);
@@ -91,5 +84,5 @@ public class RoleServiceImpl implements RoleService {
         } catch (Exception e) {
             throw new AppException(ErrorStatusCode.FAILED_DELETE);
         }
-     }
+    }
 }

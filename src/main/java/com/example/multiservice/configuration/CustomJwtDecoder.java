@@ -1,10 +1,8 @@
 package com.example.multiservice.configuration;
 
-import com.example.multiservice.dto.request.IntrospectRequest;
-import com.example.multiservice.dto.response.IntrospectResponse;
-import com.example.multiservice.service.AuthenService;
-import com.nimbusds.jose.JOSEException;
-import lombok.experimental.NonFinal;
+import java.util.Objects;
+import javax.crypto.spec.SecretKeySpec;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,18 +14,20 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.spec.SecretKeySpec;
-import java.text.ParseException;
-import java.util.Objects;
+import com.example.multiservice.dto.request.IntrospectRequest;
+import com.example.multiservice.dto.response.IntrospectResponse;
+import com.example.multiservice.service.AuthenService;
+
+import lombok.experimental.NonFinal;
 
 @Component
 public class CustomJwtDecoder implements JwtDecoder {
 
-    @NonFinal// marking to do not let Inject vào Contructor
+    @NonFinal // marking to do not let Inject vào Contructor
     @Value("${jwt.secret.key}")
     protected String secrect;
-    private static final Logger logger = LoggerFactory.getLogger(CustomJwtDecoder.class);
 
+    private static final Logger logger = LoggerFactory.getLogger(CustomJwtDecoder.class);
 
     @Autowired
     private AuthenService authenService;
@@ -38,7 +38,7 @@ public class CustomJwtDecoder implements JwtDecoder {
     public Jwt decode(String token) throws JwtException {
         logger.debug("Starting JWT decode process");
 
-         IntrospectResponse introspectResponse = authenService.introspect(
+        IntrospectResponse introspectResponse = authenService.introspect(
                 IntrospectRequest.builder().token(token).build());
 
         if (!introspectResponse.isValid()) {
@@ -46,7 +46,7 @@ public class CustomJwtDecoder implements JwtDecoder {
             throw new JwtException("Invalid token");
         }
 
-         if (Objects.isNull(nimbusJwtDecoder)) {
+        if (Objects.isNull(nimbusJwtDecoder)) {
             initializeDecoder();
         }
 
@@ -67,37 +67,38 @@ public class CustomJwtDecoder implements JwtDecoder {
                 .build();
     }
 
-//    @Override
-//    public Jwt decode(String token) throws JwtException {
-//
-//
-//        try {
-//            IntrospectResponse introspectResponse = authenService.introspect(IntrospectRequest.builder().token(token).build());
-//
-//            if (!introspectResponse.isValid()) throw new JwtException("Token invalid");// if false throw exception and dont let request
-//        } catch (JOSEException  | ParseException e) {
-//            throw new JwtException(e.getMessage());
-//        }
-//
-//
-//
-//
-//
-//
-//
-//        if (Objects.isNull(nimbusJwtDecoder)) {
-//            SecretKeySpec secretKeySpec = new SecretKeySpec(secrect.getBytes(), "HS512");
-//            nimbusJwtDecoder = NimbusJwtDecoder.withSecretKey(secretKeySpec)
-//                    .macAlgorithm(MacAlgorithm.HS512)
-//                    .build();
-//        }
-//
-//        return nimbusJwtDecoder.decode(token);
-//
-//
-//    }
+    //    @Override
+    //    public Jwt decode(String token) throws JwtException {
+    //
+    //
+    //        try {
+    //            IntrospectResponse introspectResponse =
+    // authenService.introspect(IntrospectRequest.builder().token(token).build());
+    //
+    //            if (!introspectResponse.isValid()) throw new JwtException("Token invalid");// if false throw exception
+    // and dont let request
+    //        } catch (JOSEException  | ParseException e) {
+    //            throw new JwtException(e.getMessage());
+    //        }
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //        if (Objects.isNull(nimbusJwtDecoder)) {
+    //            SecretKeySpec secretKeySpec = new SecretKeySpec(secrect.getBytes(), "HS512");
+    //            nimbusJwtDecoder = NimbusJwtDecoder.withSecretKey(secretKeySpec)
+    //                    .macAlgorithm(MacAlgorithm.HS512)
+    //                    .build();
+    //        }
+    //
+    //        return nimbusJwtDecoder.decode(token);
+    //
+    //
+    //    }
 }
-
 
 /**
  * Mục đích của JwtDecoder:
@@ -135,6 +136,3 @@ public class CustomJwtDecoder implements JwtDecoder {
  *         quyết định xem người dùng có thể truy cập tài nguyên hay không.</li>
  * </ol>
  */
-
-
-

@@ -1,12 +1,13 @@
 package com.example.multiservice.entity;
 
+import java.util.Date;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.util.Date;
 
 @Data
 @AllArgsConstructor
@@ -14,7 +15,6 @@ import java.util.Date;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 @Entity(name = "invalidate_token")
-
 public class InvalidateToken {
 
     @Id
