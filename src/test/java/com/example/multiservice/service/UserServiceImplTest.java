@@ -20,13 +20,15 @@ import java.util.Arrays;
 
 
 import org.mockito.Mockito;
+import org.springframework.test.context.TestPropertySource;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 
 @SpringBootTest
-
+@TestPropertySource("/test.properties")
 public class UserServiceImplTest {
 
     @Autowired
@@ -37,7 +39,6 @@ public class UserServiceImplTest {
 
     // request
     private UserRequest userRequest;
-
     private UserRequest badUserRequest;
 
 
