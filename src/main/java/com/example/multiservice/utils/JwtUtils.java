@@ -52,6 +52,8 @@ public class JwtUtils {
 
     public String generateToken(UserEntity userEntity) {
 
+        log.info("token generation started " + SECRET_KEY);
+
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512); // Type Of Algorithm
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(userEntity.getEmail())
