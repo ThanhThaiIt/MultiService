@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -13,6 +14,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity // optional
@@ -40,6 +44,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(
             HttpSecurity httpSecurity, JwtAuthenticationConverter getJwtAuthenticationConverter) throws Exception {
 
+        httpSecurity.cors(Customizer.withDefaults());
+
         httpSecurity.authorizeRequests(authorizeRequests -> authorizeRequests
                 .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
                 .permitAll()
@@ -55,6 +61,24 @@ public class SecurityConfig {
 
         return httpSecurity.build();
     }
+
+
+    @Bean
+    public CorsFilter corsFilter() {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+
+        // Specify allowed origins (frontend URLs)
+        corsConfiguration.addAllowedOrigin("http://localhost:3000"); // Add only trusted origins
+        corsConfiguration.addAllowedMethod("*"); // Allow all methods (or restrict to POST, GET, etc.)
+        corsConfiguration.addAllowedHeader("*"); // Allow all headers (or restrict to specific headers)
+        corsConfiguration.setAllowCredentials(true); // Allow cookies or credentials if necessary
+
+        UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
+        urlBasedCorsConfigurationSource.registerCorsConfiguration("/**", corsConfiguration);
+
+        return new CorsFilter(urlBasedCorsConfigurationSource);
+    }
+
 
     // change prefix of Role
     @Bean
@@ -78,5 +102,7 @@ public class SecurityConfig {
     //                .macAlgorithm(MacAlgorithm.HS512)
     //                .build();
     //    }
+
+
 
 }
