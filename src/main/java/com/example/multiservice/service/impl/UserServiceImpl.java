@@ -56,8 +56,6 @@ public class UserServiceImpl implements UserService {
     PermissionMapper permissionMapper;
     RoleMapper roleMapper;
 
-
-
     @Override
     public UserResponse createUser(UserRequest userRequest) {
 
