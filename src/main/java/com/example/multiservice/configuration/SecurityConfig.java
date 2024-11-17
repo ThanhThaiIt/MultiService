@@ -26,7 +26,6 @@ public class SecurityConfig {
     @Value("${jwt.secret.key}")
     protected String secretKey;
 
-
     private CustomJwtDecoder jwtDecoder;
 
     // Identify which endpoints need protection
@@ -62,7 +61,6 @@ public class SecurityConfig {
         return httpSecurity.build();
     }
 
-
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
@@ -78,7 +76,6 @@ public class SecurityConfig {
 
         return new CorsFilter(urlBasedCorsConfigurationSource);
     }
-
 
     // change prefix of Role
     @Bean
@@ -102,7 +99,5 @@ public class SecurityConfig {
     //                .macAlgorithm(MacAlgorithm.HS512)
     //                .build();
     //    }
-
-
 
 }

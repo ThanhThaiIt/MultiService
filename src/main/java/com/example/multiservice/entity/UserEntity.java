@@ -32,10 +32,10 @@ public class UserEntity {
     @Column(name = "dob")
     LocalDate dob;
 
-    @Column(name = "mobile")
+    @Column(name = "mobile", unique = true)
     String mobile;
 
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     String email;
 
     @Column(name = "password_hash")
