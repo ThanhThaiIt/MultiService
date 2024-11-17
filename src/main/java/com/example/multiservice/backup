@@ -61,3 +61,7 @@
 //            userResponse.setAvatar_url(userEntity.getAvatar_url());
 //            userResponse.setSocial_links(userEntity.getSocial_links());
 //            userResponse.setRoleName(UserRole.getById(userEntity.getRoleEntity().getId()).getName());
+
+
+
+//,columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci"

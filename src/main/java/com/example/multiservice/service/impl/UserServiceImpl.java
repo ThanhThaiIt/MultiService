@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -55,16 +56,12 @@ public class UserServiceImpl implements UserService {
     PermissionMapper permissionMapper;
     RoleMapper roleMapper;
 
-    //    UserRoleRepository roleRepository;
-    //    private final UserRoleRepository userRoleRepository;
+
 
     @Override
     public UserResponse createUser(UserRequest userRequest) {
 
         log.info("Serivce: createUser");
-        if (userRepository.existsByEmail(userRequest.email()) || userRepository.existsByMobile(userRequest.mobile())) {
-            throw new AppException(ErrorStatusCode.USER_ALREADY_EXISTS);
-        }
 
         UserEntity userEntity = userMapper.toUser(userRequest);
         userEntity.setPassword_hash(passwordEncoder.encode(userRequest.password_hash()));
@@ -96,6 +93,8 @@ public class UserServiceImpl implements UserService {
             userResponse.setRoles(roleResponses);
             return userResponse;
 
+        } catch (DataIntegrityViolationException e) {
+            throw new AppException(ErrorStatusCode.USER_ALREADY_EXISTS);
         } catch (RuntimeException e) {
             throw new AppException(ErrorStatusCode.FAILED_CREATE);
         }
