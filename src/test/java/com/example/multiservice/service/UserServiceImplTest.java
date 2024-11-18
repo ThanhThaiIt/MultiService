@@ -3,6 +3,7 @@ package com.example.multiservice.service;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 
@@ -133,8 +135,9 @@ public class UserServiceImplTest {
     void createUser_userExist_invalidRequest_Fail() {
 
         // Given
-        when(userRepository.existsByEmail(anyString())).thenReturn(true);
-        when(userRepository.existsByMobile(anyString())).thenReturn(true);
+//        when(userRepository.existsByEmail(anyString())).thenReturn(true);
+//        when(userRepository.existsByMobile(anyString())).thenReturn(true);
+        doThrow(new DataIntegrityViolationException("Duplicate entry")).when(userRepository).save(any());
 
         // When
         var exception = assertThrows(AppException.class, () -> userService.createUser(userRequest));
