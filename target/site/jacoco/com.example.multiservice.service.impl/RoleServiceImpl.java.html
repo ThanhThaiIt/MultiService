@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RoleServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">multiservice</a> &gt; <a href="index.source.html" class="el_package">com.example.multiservice.service.impl</a> &gt; <span class="el_source">RoleServiceImpl.java</span></div><h1>RoleServiceImpl.java</h1><pre class="source lang-java linenums">package com.example.multiservice.service.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.example.multiservice.dto.request.RoleRequest;
+import com.example.multiservice.dto.response.PermissionResponse;
+import com.example.multiservice.dto.response.RoleResponse;
+import com.example.multiservice.entity.PermissionEntity;
+import com.example.multiservice.entity.RoleEntity;
+import com.example.multiservice.exception.AppException;
+import com.example.multiservice.exception.enums.ErrorStatusCode;
+import com.example.multiservice.mapper.PermissionMapper;
+import com.example.multiservice.mapper.RoleMapper;
+import com.example.multiservice.repository.PermissionRepository;
+import com.example.multiservice.repository.RolePermissionRepository;
+import com.example.multiservice.repository.RoleRepository;
+import com.example.multiservice.service.RoleService;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+
+@Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+<span class="fc" id="L30">@Slf4j</span>
+public class RoleServiceImpl implements RoleService {
+    RoleRepository roleRepository;
+    RoleMapper roleMapper;
+    PermissionRepository permissionRepository;
+    RolePermissionRepository rolePermissionRepository;
+    PermissionMapper permissionMapper;
+
+    @Override
+    public RoleResponse create(RoleRequest role) {
+<span class="nc" id="L40">        var entity = roleMapper.roleToRoleEntity(role);</span>
+
+<span class="nc" id="L42">        var permissionEntities = permissionRepository.findAllByIdIn(role.permission());</span>
+
+<span class="nc" id="L44">        var roleEntity = roleRepository.save(entity);</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        for (var permissionEntity : permissionEntities) {</span>
+<span class="nc" id="L46">            rolePermissionRepository.insertRolePermission(roleEntity.getId(), permissionEntity.getId());</span>
+<span class="nc" id="L47">        }</span>
+
+<span class="nc" id="L49">        return null;</span>
+    }
+
+    @Override
+    public List&lt;RoleResponse&gt; getAllRoles() {
+<span class="nc" id="L54">        List&lt;RoleEntity&gt; roles = roleRepository.findAll();</span>
+
+<span class="nc" id="L56">        List&lt;RoleResponse&gt; roleResponses = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        for (RoleEntity roleEntity : roles) {</span>
+<span class="nc" id="L59">            List&lt;PermissionEntity&gt; permissionEntities =</span>
+<span class="nc" id="L60">                    permissionRepository.findPermissionsByRoleId(roleEntity.getId());</span>
+<span class="nc" id="L61">            List&lt;PermissionResponse&gt; permissionResponses = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L63" title="All 2 branches missed.">            for (PermissionEntity permissionEntity : permissionEntities) {</span>
+<span class="nc" id="L64">                permissionResponses.add(permissionMapper.toPermissionResponse(permissionEntity));</span>
+<span class="nc" id="L65">            }</span>
+<span class="nc" id="L66">            RoleResponse roleResponse = roleMapper.roleToRoleResponse(roleEntity);</span>
+<span class="nc" id="L67">            roleResponse.setPermissions(permissionResponses);</span>
+<span class="nc" id="L68">            roleResponses.add(roleResponse);</span>
+<span class="nc" id="L69">        }</span>
+
+<span class="nc" id="L71">        return roleResponses;</span>
+    }
+
+    @Override
+    public String delete(int id) {
+        try {
+
+<span class="nc bnc" id="L78" title="All 2 branches missed.">            if (!roleRepository.existsById(id)) {</span>
+<span class="nc" id="L79">                throw new AppException(ErrorStatusCode.NOT_FOUND);</span>
+            }
+<span class="nc" id="L81">            rolePermissionRepository.deleteByRoleId(id);</span>
+<span class="nc" id="L82">            roleRepository.deleteById(id);</span>
+<span class="nc" id="L83">            return &quot;success&quot;;</span>
+<span class="nc" id="L84">        } catch (Exception e) {</span>
+<span class="nc" id="L85">            throw new AppException(ErrorStatusCode.FAILED_DELETE);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
