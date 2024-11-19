@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PermissionServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">multiservice</a> &gt; <a href="index.source.html" class="el_package">com.example.multiservice.service.impl</a> &gt; <span class="el_source">PermissionServiceImpl.java</span></div><h1>PermissionServiceImpl.java</h1><pre class="source lang-java linenums">package com.example.multiservice.service.impl;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import com.example.multiservice.dto.request.PermissionRequest;
+import com.example.multiservice.dto.request.PermissionUpdRequest;
+import com.example.multiservice.dto.response.PermissionResponse;
+import com.example.multiservice.entity.PermissionEntity;
+import com.example.multiservice.exception.AppException;
+import com.example.multiservice.exception.enums.ErrorStatusCode;
+import com.example.multiservice.mapper.PermissionMapper;
+import com.example.multiservice.repository.PermissionRepository;
+import com.example.multiservice.service.PermissionService;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+
+@Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+<span class="fc" id="L26">@Slf4j</span>
+public class PermissionServiceImpl implements PermissionService {
+
+    PermissionRepository permissionRepository;
+    PermissionMapper permissionMapper;
+
+    @Override
+    public PermissionResponse create(PermissionRequest request) {
+
+<span class="nc bnc" id="L35" title="All 2 branches missed.">        if (permissionRepository.existsBySlug(request.slug())) {</span>
+<span class="nc" id="L36">            throw new AppException(ErrorStatusCode.PERMISSION_ALREADY_EXISTS);</span>
+        }
+
+<span class="nc" id="L39">        PermissionEntity permissionEntity = permissionMapper.toPermissionEntity(request);</span>
+<span class="nc" id="L40">        permissionEntity = permissionRepository.save(permissionEntity);</span>
+
+<span class="nc" id="L42">        return permissionMapper.toPermissionResponse(permissionEntity);</span>
+    }
+
+    @Override
+    public List&lt;PermissionResponse&gt; getAllPermissions() {
+<span class="nc" id="L47">        var permissionEntities = permissionRepository.findAll();</span>
+
+<span class="nc" id="L49">        return permissionEntities.stream()</span>
+<span class="nc" id="L50">                .map(p -&gt; permissionMapper.toPermissionResponse(p))</span>
+<span class="nc" id="L51">                .toList();</span>
+    }
+
+    @Override
+    public void delete(int id) {
+
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        if (permissionRepository.existsById(id)) {</span>
+<span class="nc" id="L58">            permissionRepository.deleteById(id);</span>
+<span class="nc" id="L59">        } else throw new AppException(ErrorStatusCode.PERMISSION_NOT_FOUND);</span>
+<span class="nc" id="L60">    }</span>
+
+    @Override
+    public PermissionResponse update(PermissionUpdRequest permissionUpdRequest) {
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        if (!permissionRepository.existsById(permissionUpdRequest.id())) {</span>
+<span class="nc" id="L65">            throw new AppException(ErrorStatusCode.PERMISSION_NOT_FOUND);</span>
+        }
+
+        try {
+<span class="nc" id="L69">            var permissionEntity = permissionMapper.toPermissionEntityWithId(permissionUpdRequest);</span>
+<span class="nc" id="L70">            var rs = permissionRepository.save(permissionEntity);</span>
+<span class="nc" id="L71">            return permissionMapper.toPermissionResponse(rs);</span>
+<span class="nc" id="L72">        } catch (RuntimeException e) {</span>
+<span class="nc" id="L73">            throw new AppException(ErrorStatusCode.FAILED_UPDATE);</span>
+        }
+    }
+
+    @Override
+    public PermissionResponse getPermissionById(int id) {
+<span class="nc" id="L79">        Optional&lt;PermissionEntity&gt; permissionEntity = permissionRepository.findById(id);</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (permissionEntity.isPresent()) {</span>
+<span class="nc" id="L81">            return permissionMapper.toPermissionResponse(permissionEntity.get());</span>
+        }
+<span class="nc" id="L83">        throw new AppException(ErrorStatusCode.PERMISSION_NOT_FOUND);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

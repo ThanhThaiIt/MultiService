@@ -1,0 +1,4 @@
+com/example/multiservice/controller/UserControllerTest.class
+com/example/multiservice/MultiserviceApplicationTests.class
+com/example/multiservice/controller/UserControllerIntegrationTest.class
+com/example/multiservice/service/UserServiceImplTest.class

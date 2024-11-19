@@ -1,0 +1,556 @@
+CREATE DATABASE `multiservicemanagement`;
+USE `multiservicemanagement`;
+
+
+
+
+
+
+-- Create table user with profileId as a foreign key
+CREATE TABLE `user` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `first_name` VARCHAR(50) DEFAULT NULL,
+  `middle_name` VARCHAR(50) DEFAULT NULL,
+  `last_name` VARCHAR(50) DEFAULT NULL,
+  `mobile` VARCHAR(15) DEFAULT NULL,
+  `email` VARCHAR(50) DEFAULT NULL,
+  `password_hash` VARCHAR(300) NOT NULL,
+  `registered_at` DATETIME NOT NULL,
+  `last_login` DATETIME DEFAULT NULL,
+  `intro` TINYTEXT DEFAULT NULL,
+  `bio` TEXT DEFAULT NULL,
+  `avatar_url` VARCHAR(255) DEFAULT NULL,
+  `social_links` VARCHAR(150) DEFAULT NULL,
+    `active` TINYINT(1) NOT NULL DEFAULT 1,
+
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_mobile` (`mobile`),
+  UNIQUE KEY `uq_email` (`email`),
+  KEY `idx_user_lastname` (`last_name`)          -- Additional index for lastName for quick searches
+);
+
+
+
+
+
+
+-- Create table roles
+CREATE TABLE `roles` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `title` VARCHAR(75) NOT NULL,
+  `slug` VARCHAR(100) NOT NULL,
+  `description` TINYTEXT DEFAULT NULL,
+  `active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created_at` DATETIME NOT NULL,
+  `updated_at` DATETIME DEFAULT NULL,
+  `content` TEXT DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_slug` (`slug`)
+);
+
+
+CREATE TABLE `user_roles` (
+  `user_id` BIGINT NOT NULL,
+  `role_id` BIGINT NOT NULL,
+  PRIMARY KEY (`user_id`, `role_id`)
+);
+
+-- Create table permission
+CREATE TABLE `permission` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `title` VARCHAR(75) NOT NULL,
+  `slug` VARCHAR(100) NOT NULL,
+  `description` TINYTEXT DEFAULT NULL,
+  `active` TINYINT(1) NOT NULL DEFAULT 0,
+  `created_at` DATETIME NOT NULL,
+  `updated_at` DATETIME DEFAULT NULL,
+  `content` TEXT DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_slug` (`slug`)
+);
+
+-- Create table role_permission (linking roles and permissions)
+CREATE TABLE `role_permission` (
+  `role_id` BIGINT NOT NULL,
+  `permission_id` BIGINT NOT NULL,
+  `created_at` DATETIME NOT NULL,
+  `updated_at` DATETIME DEFAULT NULL,
+  PRIMARY KEY (`role_id`, `permission_id`),
+  KEY `idx_rp_role` (`role_id`),                 -- Index for roleId for faster access
+  KEY `idx_rp_permission` (`permission_id`)      -- Index for permissionId for faster access
+);
+
+-- Add foreign key constraints for the user table
+-- ALTER TABLE `user`
+-- ADD CONSTRAINT `fk_user_role`
+-- FOREIGN KEY (`role_id`) REFERENCES `roles`(`id`)
+-- ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+
+ALTER TABLE `user_roles`
+CHANGE COLUMN `role_id` `roles_id` BIGINT NOT NULL;
+
+-- Add foreign key constraints for the role_permission table
+ALTER TABLE `role_permission`
+ADD CONSTRAINT `fk_rp_role`
+FOREIGN KEY (`role_id`) REFERENCES `roles`(`id`)
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE `role_permission`
+ADD CONSTRAINT `fk_rp_permission`
+FOREIGN KEY (`permission_id`) REFERENCES `permission`(`id`)
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+
+
+-- Thêm ràng buộc khóa ngoại từ `user_roles` đến `user`
+ALTER TABLE `user_roles`
+ADD CONSTRAINT `fk_user_roles_user`
+FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Thêm ràng buộc khóa ngoại từ `user_roles` đến `roles`
+ALTER TABLE `user_roles`
+ADD CONSTRAINT `fk_user_roles_role`
+FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`)
+ON DELETE CASCADE ON UPDATE CASCADE;
+
+
+
+INSERT INTO `roles` (`title`, `slug`, `description`, `active`, `created_at`, `updated_at`, `content`)
+VALUES
+('ROLE_ADMIN', 'admin', 'Administrator role with full access', 1, NOW(), NULL, NULL),
+('ROLE_GUEST', 'user', 'Standard user role with limited access', 1, NOW(), NULL, NULL);
+
+
+INSERT INTO `permission` (`title`, `slug`, `description`, `active`, `created_at`, `updated_at`, `content`)
+VALUES
+('Read All User', 'read-articles', 'Permission to read articles', 1, '2024-11-06 10:00:00', NULL, 'Allows user to read articles'),
+('CREATE User', 'write-articles', 'Permission to write articles', 1, '2024-11-06 10:05:00', '2024-11-06 11:00:00', 'Allows user to write and publish articles'),
+('Edit User', 'edit-articles', 'Permission to edit existing articles', 1, '2024-11-06 10:10:00', NULL, 'Allows user to modify articles'),
+('Delete User', 'delete-articles', 'Permission to delete articles', 0, '2024-11-06 10:15:00', NULL, 'Allows user to remove articles'),
+('Manage Users', 'manage-users', 'Permission to manage user accounts', 1, '2024-11-06 10:20:00', '2024-11-06 11:30:00', 'Full access to manage user accounts');
+
+
+ALTER TABLE user
+MODIFY COLUMN password_hash VARCHAR(300);
+
+
+ALTER TABLE `role_permission`
+MODIFY `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+ALTER TABLE `role_permission`
+MODIFY `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+
+
+ALTER TABLE `user`
+ADD COLUMN `dob` DATE DEFAULT NULL AFTER `last_name`;
+
+
+CREATE TABLE invalidate_token (
+    id VARCHAR(100) PRIMARY KEY,
+    expiry_date DATETIME
+);
+
+SELECT * from invalidate_token;
+
+
+SELECT * FROM user_roles ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Create the product table in the shop database
+CREATE TABLE `product` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `userId` BIGINT NOT NULL,
+  `title` VARCHAR(75) NOT NULL,
+  `metaTitle` VARCHAR(100) NULL,
+  `slug` VARCHAR(100) NOT NULL,
+  `summary` TINYTEXT NULL,
+  `quantity` SMALLINT(6) NOT NULL DEFAULT 0,
+  `shop` TINYINT(1) NOT NULL DEFAULT 0,
+  `createdAt` DATETIME NOT NULL,
+  `updatedAt` DATETIME NULL DEFAULT NULL,
+  `publishedAt` DATETIME NULL DEFAULT NULL,
+  `startsAt` DATETIME NULL DEFAULT NULL,
+  `endsAt` DATETIME NULL DEFAULT NULL,
+  `content` TEXT NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uq_slug` (`slug` ASC),
+  INDEX `idx_product_user` (`userId` ASC)
+
+
+);
+
+-- Create table for sizes
+CREATE TABLE `size` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(50) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
+-- Create table for colors
+CREATE TABLE  `color` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(50) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
+
+
+
+CREATE TABLE `variant` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `productId` BIGINT NOT NULL,
+  `sizeId` BIGINT   NULL,
+  `colorId` BIGINT   NULL,
+  `image` VARCHAR(250) NOT NULL,
+  `sku` VARCHAR(100) NOT NULL,
+  `price` FLOAT NOT NULL DEFAULT 0,
+  `discount` FLOAT NOT NULL DEFAULT 0,
+  `quantity` SMALLINT(6) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+ UNIQUE INDEX `uq_product` (`productId` ASC)
+);
+
+
+
+
+
+--   categories
+CREATE TABLE  `category` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `parentId` BIGINT NULL DEFAULT NULL,
+  `title` VARCHAR(75) NOT NULL,
+  `metaTitle` VARCHAR(100) NULL DEFAULT NULL,
+  `slug` VARCHAR(100) NOT NULL,
+  `content` TEXT NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
+
+
+
+
+CREATE TABLE  `product_category` (
+  `productId` BIGINT NOT NULL,
+  `categoryId` BIGINT NOT NULL,
+  PRIMARY KEY (`productId`, `categoryId`),
+  INDEX `idx_pc_category` (`categoryId` ASC),
+  INDEX `idx_pc_product` (`productId` ASC)
+) ENGINE=InnoDB;
+
+
+
+
+
+-- product_review
+
+
+CREATE TABLE `product_review` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `productId` BIGINT NOT NULL,
+  `userId` BIGINT NOT NULL,  -- Reference to the user who leaves the review
+  `parentId` BIGINT NULL DEFAULT NULL,
+  `title` VARCHAR(100) NOT NULL,
+  `rating` SMALLINT(6) NOT NULL DEFAULT 0,
+  `published` TINYINT(1) NOT NULL DEFAULT 0,
+  `createdAt` DATETIME NOT NULL,
+  `publishedAt` DATETIME NULL DEFAULT NULL,
+  `content` TEXT NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `idx_review_product` (`productId` ASC),
+  INDEX `idx_review_user` (`userId` ASC)  -- Index for userId
+) ENGINE=InnoDB; -- Specify the storage engine
+
+
+-- cart
+
+
+CREATE TABLE `cart` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `userId` BIGINT NOT NULL,
+  `statusId` SMALLINT NOT NULL ,
+  `createdAt` DATETIME NOT NULL,
+  `updatedAt` DATETIME NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `idx_cart_user` (`userId` ASC)
+);
+
+
+
+CREATE TABLE `cart_item` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `productId` BIGINT NOT NULL,
+  `cartId` BIGINT NOT NULL,
+  `quantity` INT NOT NULL DEFAULT 1,
+  `price` FLOAT NOT NULL DEFAULT 0,
+  `createdAt` DATETIME NOT NULL,
+  `updatedAt` DATETIME NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `idx_cart_item_product` (`productId` ASC)
+);
+
+
+
+CREATE TABLE `order` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `userId` BIGINT NOT NULL,
+  `shippingAddressId` BIGINT NOT NULL,  -- Foreign key to address
+  `paymentMethodId` BIGINT NOT NULL,     -- Foreign key to payment_method
+  `status` SMALLINT NOT NULL DEFAULT 0,
+  `subTotal` FLOAT NOT NULL DEFAULT 0,
+  `total` FLOAT NOT NULL DEFAULT 0,
+  `createdAt` DATETIME NOT NULL,
+  `updatedAt` DATETIME NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `idx_order_user` (`userId` ASC)
+ );
+
+
+CREATE TABLE `order_item` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `productId` BIGINT NOT NULL,
+  `orderId` BIGINT NOT NULL,
+  `quantity` INT NOT NULL DEFAULT 1,
+  `price` FLOAT NOT NULL DEFAULT 0,
+  `createdAt` DATETIME NOT NULL,
+  `updatedAt` DATETIME NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `idx_order_item_product` (`productId` ASC)
+ );
+
+
+CREATE TABLE  `transaction` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `userId` BIGINT NOT NULL,
+  `orderId` BIGINT NOT NULL,
+  `status` SMALLINT NOT NULL DEFAULT 0,
+  `amount` FLOAT NOT NULL DEFAULT 0,
+  `createdAt` DATETIME NOT NULL,
+  `updatedAt` DATETIME NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `idx_transaction_user` (`userId` ASC)
+);
+
+
+
+-- address
+
+CREATE TABLE `address` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+
+
+  `recipientName` VARCHAR(100) NOT NULL,
+  `addressLine1` VARCHAR(255) NOT NULL,
+  `addressLine2` VARCHAR(255) NULL,
+  `city` VARCHAR(100) NOT NULL,
+  `state` VARCHAR(100) NOT NULL,
+  `postalCode` VARCHAR(20) NOT NULL,
+  `country` VARCHAR(100) NOT NULL,
+  `createdAt` DATETIME NOT NULL,
+  `updatedAt` DATETIME NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+
+);
+
+CREATE TABLE `payment_method`(
+	`id` BIGINT NOT NULL AUTO_INCREMENT,
+	`name` varchar(50),
+	`description` text,
+
+	PRIMARY KEY (`id`)
+
+);
+
+
+-- --------------------- Alter ------------------------------
+
+
+
+-- --------product
+
+ALTER TABLE `product`
+Add constraint `fk_product_user`
+Foreign key (`userId`) REFERENCES `user`(`id`)
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+
+
+-- --------variant
+
+ALTER TABLE `variant`
+Add constraint `fk_variant_product`
+Foreign key (`productId`) REFERENCES `product`(`id`)
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE `variant`
+Add constraint `fk_variant_size`
+Foreign key (`sizeId`) REFERENCES `size`(`id`)
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE `variant`
+Add constraint `fk_variant_color`
+Foreign key (`colorId`) REFERENCES `color`(`id`)
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+
+-- --------Category
+
+-- Add foreign key constraint for productId
+ALTER TABLE `product_category`
+ADD CONSTRAINT `fk_pc_product`
+  FOREIGN KEY (`productId`)
+  REFERENCES  `product` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+-- Add foreign key constraint for categoryId
+ALTER TABLE `product_category`
+ADD CONSTRAINT `fk_pc_category`
+  FOREIGN KEY (`categoryId`)
+  REFERENCES `category` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+ --  index
+ALTER TABLE  `category`
+ADD INDEX `idx_category_parent` (`parentId` ASC);
+
+-- Add parent-child relationship within categories
+ALTER TABLE  `category`
+ADD CONSTRAINT `fk_category_parent`
+  FOREIGN KEY (`parentId`)
+  REFERENCES  `category` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+
+
+ -- ----------- review
+
+
+
+ -- Add foreign key constraint for productId
+ALTER TABLE `product_review`
+ADD CONSTRAINT `fk_review_product`
+  FOREIGN KEY (`productId`)
+  REFERENCES `product` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+-- Add foreign key constraint for userId
+ALTER TABLE `product_review`
+ADD CONSTRAINT `fk_review_user`
+  FOREIGN KEY (`userId`)
+  REFERENCES `user` (`id`)  -- Assuming there's a `user` table
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+-- Add index for parentId
+ALTER TABLE `product_review`
+ADD INDEX `idx_review_parent` (`parentId` ASC);
+
+-- Add foreign key constraint for parentId
+ALTER TABLE `product_review`
+ADD CONSTRAINT `fk_review_parent`
+  FOREIGN KEY (`parentId`)
+  REFERENCES `product_review` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+
+
+ -- ----------- cart
+
+
+ ALTER TABLE  `cart`
+ADD CONSTRAINT `fk_cart_user`
+FOREIGN KEY (`userId`) REFERENCES  `user` (`id`)
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+
+
+ALTER TABLE  `cart_item`
+ADD CONSTRAINT `fk_cart_item_product`
+FOREIGN KEY (`productId`) REFERENCES  `product` (`id`)
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE  `cart_item`
+ADD CONSTRAINT `fk_cart_item_cart`
+FOREIGN KEY (`cartId`) REFERENCES  `cart` (`id`)
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+
+ALTER TABLE  `order`
+ADD CONSTRAINT `fk_order_user`
+FOREIGN KEY (`userId`) REFERENCES `user` (`id`)
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+
+ALTER TABLE  `order_item`
+ADD CONSTRAINT `fk_order_item_product`
+FOREIGN KEY (`productId`) REFERENCES `product` (`id`)
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE  `order_item`
+ADD CONSTRAINT `fk_order_item_order`
+FOREIGN KEY (`orderId`) REFERENCES `order` (`id`)
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+
+ALTER TABLE `transaction`
+ADD CONSTRAINT `fk_transaction_user`
+FOREIGN KEY (`userId`) REFERENCES  `user` (`id`)
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE `transaction`
+ADD CONSTRAINT `fk_transaction_order`
+FOREIGN KEY (`orderId`) REFERENCES  `order` (`id`)
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+
+
+
+
+-- Add foreign key constraint for shipping address
+ALTER TABLE  `order`
+ADD CONSTRAINT `fk_order_shipping_address`
+FOREIGN KEY (`shippingAddressId`) REFERENCES  `address` (`id`)
+ON DELETE CASCADE ON UPDATE CASCADE;  -- Adjust actions as needed
+
+-- Add foreign key constraint for payment method
+ALTER TABLE  `order`
+ADD CONSTRAINT `fk_order_payment_method`
+FOREIGN KEY (`paymentMethodId`) REFERENCES  `payment_method` (`id`)
+ON DELETE NO ACTION ON UPDATE NO ACTION; -- Adjust actions as needed
+
+
+
+ALTER TABLE users
+ADD COLUMN image TEXT;
+
+INSERT INTO  `roles` (name) VALUES ('ROLE_STAFF')
+
+
+ALTER TABLE users
+ADD COLUMN enabled boolean;
+

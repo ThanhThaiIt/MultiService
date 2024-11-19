@@ -19,6 +19,7 @@ public class StartupCleanup {
 
     private static final Logger log = LoggerFactory.getLogger(StartupCleanup.class);
 
+
     @Autowired
     private InvalidateTokenService invalidateTokenService;
 
