@@ -138,7 +138,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    // @PreAuthorize("hasRole('ADMIN')")
+     //@PreAuthorize("hasRole('ADMIN')")
     @PreAuthorize("hasAnyAuthority('create_post')")
     public List<UserResponse> getAllUsers() {
 

@@ -6,6 +6,7 @@ FROM maven:3.9.8-amazoncorretto-21 AS buildApp
 WORKDIR /app-multiservice
 COPY pom.xml .
 COPY src ./src
+COPY .env .
 
 # Build source code with maven
 RUN mvn package -DskipTests
@@ -16,7 +17,7 @@ FROM amazoncorretto:21.0.4
 
 # Set working folder to App and copy complied file from above step
 WORKDIR /app
-COPY --from=buildApp /app-multiservice/target/*.jar multiservice.jar
+COPY --from=buildApp /app/target/*.jar multiservice.jar
 
 # Command to run the application
 ENTRYPOINT ["java", "-jar", "multiservice.jar"]
