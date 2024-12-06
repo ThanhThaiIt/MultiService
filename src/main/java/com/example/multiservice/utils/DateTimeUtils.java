@@ -1,5 +1,6 @@
 package com.example.multiservice.utils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.mapstruct.Named;
@@ -12,4 +13,7 @@ public class DateTimeUtils {
     public LocalDateTime parseStringToLocalDateTime(String dateString) {
         return LocalDateTime.parse(dateString);
     }
+
+    @Named("parserStringToLocalDate")
+    public LocalDate parseStringToLocalDate(String dateString) {return LocalDate.parse(dateString);}
 }

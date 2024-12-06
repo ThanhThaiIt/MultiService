@@ -1,14 +1,10 @@
 package com.example.multiservice.controller;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.example.multiservice.dto.request.*;
+import com.example.multiservice.dto.response.RegisterResponse;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
 
-import com.example.multiservice.dto.request.AuthenticationRequest;
-import com.example.multiservice.dto.request.IntrospectRequest;
-import com.example.multiservice.dto.request.LogoutRequest;
-import com.example.multiservice.dto.request.RefreshTokenRequest;
 import com.example.multiservice.dto.response.ApiResponse;
 import com.example.multiservice.dto.response.AuthenticationResponse;
 import com.example.multiservice.dto.response.IntrospectResponse;
@@ -46,9 +42,33 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh")
-    ApiResponse<AuthenticationResponse> logout(@RequestBody RefreshTokenRequest request) {
+    ApiResponse<AuthenticationResponse> refresh(@RequestBody RefreshTokenRequest request) {
         var rs = authenService.refreshToken(request);
 
         return ApiResponse.<AuthenticationResponse>builder().result(rs).build();
+    }
+
+    @PostMapping("/register")
+    ApiResponse<RegisterResponse> register(@Valid RegisterRequest registerRequest) {
+
+        var rs = authenService.register(registerRequest);
+
+        return ApiResponse.<RegisterResponse>builder().result(rs).build();
+
+    }
+
+    @PostMapping("/resend-email")
+    ApiResponse<String> resendEmail(@RequestParam String Data){
+        var rs = authenService.resendEmail(Data);
+        return ApiResponse.<String>builder().result(rs).build();
+
+    }
+
+    @GetMapping("/{token}")
+    ApiResponse<String> activeAccount(@PathVariable("token") String token) {
+
+        System.out.println("token is: " + token);
+        var rs = authenService.activeAcc(token);
+        return ApiResponse.<String>builder().result(rs).build();
     }
 }

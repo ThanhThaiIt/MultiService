@@ -1,11 +1,9 @@
 package com.example.multiservice.service;
 
+import com.example.multiservice.dto.request.*;
+import com.example.multiservice.dto.response.RegisterResponse;
 import org.springframework.stereotype.Service;
 
-import com.example.multiservice.dto.request.AuthenticationRequest;
-import com.example.multiservice.dto.request.IntrospectRequest;
-import com.example.multiservice.dto.request.LogoutRequest;
-import com.example.multiservice.dto.request.RefreshTokenRequest;
 import com.example.multiservice.dto.response.AuthenticationResponse;
 import com.example.multiservice.dto.response.IntrospectResponse;
 
@@ -19,4 +17,11 @@ public interface AuthenService {
     void logout(LogoutRequest request);
 
     AuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
+
+    RegisterResponse register(RegisterRequest registerRequest);
+
+    String activeAcc(String token);
+
+    String resendEmail(String email);
+
 }
