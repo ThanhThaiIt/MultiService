@@ -1,5 +1,6 @@
 package com.example.multiservice.mapper;
 
+import com.example.multiservice.dto.request.RegisterRequest;
 import com.example.multiservice.dto.request.UserRequest;
 import com.example.multiservice.dto.request.UserUpdateRequest;
 import com.example.multiservice.dto.response.RoleResponse;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-11-24T11:32:36+0700",
+    date = "2024-12-01T14:13:51+0700",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.3 (Oracle Corporation)"
 )
 @Component
@@ -72,6 +73,27 @@ public class UserMapperImpl implements UserMapper {
         userEntity.avatar_url( userUpdateRequest.avatar_url() );
         userEntity.social_links( userUpdateRequest.social_links() );
         userEntity.active( userUpdateRequest.active() );
+
+        return userEntity.build();
+    }
+
+    @Override
+    public UserEntity toRegisterUser(RegisterRequest registerRequest) {
+        if ( registerRequest == null ) {
+            return null;
+        }
+
+        UserEntity.UserEntityBuilder userEntity = UserEntity.builder();
+
+        userEntity.dob( dateTimeUtils.parseStringToLocalDate( registerRequest.dob() ) );
+        userEntity.first_name( registerRequest.first_name() );
+        userEntity.middle_name( registerRequest.middle_name() );
+        userEntity.last_name( registerRequest.last_name() );
+        userEntity.mobile( registerRequest.mobile() );
+        userEntity.email( registerRequest.email() );
+        userEntity.intro( registerRequest.intro() );
+        userEntity.bio( registerRequest.bio() );
+        userEntity.social_links( registerRequest.social_links() );
 
         return userEntity.build();
     }

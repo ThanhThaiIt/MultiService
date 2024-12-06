@@ -67,4 +67,9 @@ public class UserEntity {
 
     @ManyToMany
     List<RoleEntity> roles;
+
+
+    public boolean isActive() {
+        return this.active == 1;
+    }
 }

@@ -1,17 +1,24 @@
 package com.example.multiservice.service.impl;
 
+import java.io.ByteArrayInputStream;
 import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
+import com.example.multiservice.configuration.RabbitmqConfig;
+import com.example.multiservice.dto.request.*;
+import com.example.multiservice.dto.response.RegisterResponse;
+import com.example.multiservice.entity.RoleEntity;
+import com.example.multiservice.mapper.UserMapper;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.multiservice.dto.request.AuthenticationRequest;
-import com.example.multiservice.dto.request.IntrospectRequest;
-import com.example.multiservice.dto.request.LogoutRequest;
-import com.example.multiservice.dto.request.RefreshTokenRequest;
 import com.example.multiservice.dto.response.AuthenticationResponse;
 import com.example.multiservice.dto.response.IntrospectResponse;
 import com.example.multiservice.entity.InvalidateToken;
@@ -39,7 +46,9 @@ public class AuthenServiceImpl implements AuthenService {
     UserRepository userRepository;
     JwtUtils jwtUtils;
     InvalidateTokenRepository tokenRepository;
-    // UserRoleRepository userRoleRepository;
+     UserMapper userMapper;
+      RabbitTemplate rabbitTemplate;
+    PasswordEncoder passwordEncoder;
 
     @Override
     public AuthenticationResponse Authenticate(AuthenticationRequest authenticationRequest) {
@@ -48,11 +57,20 @@ public class AuthenServiceImpl implements AuthenService {
         var userEntity = userRepository
                 .findByEmail(authenticationRequest.email())
                 .orElseThrow(() -> new AppException(ErrorStatusCode.USER_NOT_FOUND));
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
 
+
+
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         boolean checkAuthen = passwordEncoder.matches(authenticationRequest.password(), userEntity.getPassword_hash());
         if (!checkAuthen) {
             throw new AppException(ErrorStatusCode.UNAUTHENTICATED);
+        }
+
+        if (!userEntity.isActive() && checkAuthen){
+            log.info("User Correct But None Activate");
+
+            rabbitTemplate.convertAndSend(RabbitmqConfig.NOTIFICATION_EXCHANGE,RabbitmqConfig.NOTIFICATION_ROUTING_KEY,userEntity.getEmail());
+            return AuthenticationResponse.builder().statusActive("Email Sending").build();
         }
 
         var token = jwtUtils.generateToken(userEntity);
@@ -133,4 +151,66 @@ public class AuthenServiceImpl implements AuthenService {
 
         return AuthenticationResponse.builder().token(token).build();
     }
+
+    @Override
+    public RegisterResponse register(RegisterRequest registerRequest) {
+
+        UserEntity userEntity = userMapper.toRegisterUser(registerRequest);
+        userEntity.setPassword_hash(passwordEncoder.encode(registerRequest.password_hash()));
+        userEntity.setAvatar_url(registerRequest.avatar_url().getOriginalFilename());
+        userEntity.setRegistered_at(LocalDateTime.now());
+        userEntity.setLast_login(LocalDateTime.now());
+        userEntity.setActive(0);
+        List<RoleEntity> roles = Collections.singletonList(RoleEntity.builder().id(2).build());
+        userEntity.setRoles(roles);
+        UserEntity user = userRepository.save(userEntity);
+
+
+
+
+        String token = jwtUtils.generateToken(user);
+        String message =  user.getEmail()+" "+token;
+
+        // Sent Data To Rabbit Mq
+        rabbitTemplate.convertAndSend(RabbitmqConfig.ACTIVATE_ACCOUNT_EXCHANGE,RabbitmqConfig.ACTIVATE_ACCOUNT_ROUTING_KEY, message);
+
+
+        return RegisterResponse.builder().token(token).build();
+    }
+
+    @Override
+    public String resendEmail(String email) {
+
+        var user = userRepository.findByEmail(email);
+        if (user != null) {
+            String token = jwtUtils.generateToken(user.get());
+            String message =  email+" "+token;
+
+            // Sent Data To Rabbit Mq
+            rabbitTemplate.convertAndSend(RabbitmqConfig.ACTIVATE_ACCOUNT_EXCHANGE,RabbitmqConfig.ACTIVATE_ACCOUNT_ROUTING_KEY, message);
+            return message+" Resending Success";
+        }
+
+        return "Fail Resending Email";
+    }
+
+    @Override
+    public String activeAcc(String token) {
+        try {
+            System.out.println("chuan bi veirfy");
+            SignedJWT signedJWT = jwtUtils.verifyToken(token,false);
+            String email = signedJWT.getJWTClaimsSet().getSubject();
+            userRepository.findByEmail(email).ifPresent(user -> {
+                user.setActive(1);
+                userRepository.save(user);
+            });
+        } catch (JOSEException e) {
+            throw new RuntimeException(e);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        return "Account Activated";
+    }
+
+
 }
